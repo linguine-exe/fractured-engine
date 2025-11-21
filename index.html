@@ -46,7 +46,7 @@
 
     .res-value {
       font-variant-numeric: tabular-nums;
-      min-width: 70px;
+      min-width: 80px;
       text-align: right;
     }
 
@@ -65,7 +65,7 @@
     }
 
     #gameInner {
-      max-width: 720px;
+      max-width: 760px;
       width: 100%;
       display: flex;
       flex-direction: column;
@@ -94,7 +94,7 @@
       background: radial-gradient(circle at top, #171727 0%, #050510 60%);
       padding: 10px 12px;
       width: 100%;
-      max-width: 480px;
+      max-width: 540px;
       text-align: left;
       box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
     }
@@ -167,6 +167,59 @@
       display: none !important;
     }
 
+    /* Generators */
+    .gen-row {
+      border-top: 1px solid rgba(70, 70, 110, 0.9);
+      padding-top: 6px;
+      margin-top: 6px;
+    }
+
+    .gen-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      margin-bottom: 3px;
+    }
+
+    .gen-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .gen-icon {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+
+    .gen-name {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .gen-count {
+      font-size: 11px;
+      opacity: 0.8;
+    }
+
+    .gen-body {
+      margin-bottom: 3px;
+    }
+
+    .gen-flavor {
+      font-size: 10px;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+
+    .gen-actions {
+      display: flex;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
     /* Intro overlay */
     #introOverlay {
       position: fixed;
@@ -230,7 +283,7 @@
       }
 
       .res-value {
-        min-width: 60px;
+        min-width: 70px;
       }
     }
   </style>
@@ -242,13 +295,13 @@
       <div id="introTitle">Fractured Engine</div>
       <div id="introBody">
         The core that once held reality together has shattered.
-        What remains is a quiet lattice of fading sparks and drifting code.
-        Your task is simple: coax a new engine into existence, one spark at a time,
-        until the laws that bind this place answer to you again.
+        Its routines are gone, leaving only drifting Sparks in the dark.
+        You are the new Architect, rebuilding from nothing by stitching together
+        crude constructs until the engine remembers how to run itself.
       </div>
       <div id="introHint">
-        Click to gather Sparks, assemble Nodes, then stabilize the flow.
-        New systems will reveal themselves as the engine remembers how to run.
+        Your work begins with simple generators.
+        As the engine strengthens, deeper systems will reveal themselves.
       </div>
       <button id="introConfirmBtn">Begin reassembly</button>
     </div>
@@ -260,11 +313,6 @@
       <span class="res-icon">●</span>
       <span class="res-value inline-stat" id="sparksDisplay">0</span>
       <span class="res-label">Sparks</span>
-    </div>
-    <div class="res-item">
-      <span class="res-icon">◆</span>
-      <span class="res-value inline-stat" id="nodesDisplay">0</span>
-      <span class="res-label">Nodes</span>
     </div>
     <div class="res-item">
       <span class="res-icon">⌘</span>
@@ -283,42 +331,22 @@
     <div id="gameInner">
       <div>
         <h1>Fractured Engine</h1>
-        <div id="subtitle">Prototype build - coax the core back to life</div>
+        <div id="subtitle">Prototype build - let the engine run itself</div>
       </div>
 
-      <!-- Core actions panel -->
-      <div class="panel" id="panelCore">
+      <!-- Generators panel -->
+      <div class="panel" id="panelGenerators">
         <div class="panel-title">
-          <span><span class="icon">●</span> Core Channel</span>
+          <span><span class="icon">◆</span> Construct Lattice</span>
         </div>
         <div class="panel-flavor">
-          The first flickers of a new engine. Crude, manual, but alive.
+          The first layer of the new engine. Simple constructs that coax Sparks into motion.
+          Let them work. They will feel slow at first.
         </div>
         <div class="row small">
-          Each tap drags a single Spark out of the static and into your control.
+          Generators produce Sparks automatically. More complex constructs unlock as the engine stabilizes.
         </div>
-        <button id="gainSparkBtn">Channel Spark (gain 1 Spark)</button>
-      </div>
-
-      <!-- Nodes panel (unlocked with a few Sparks) -->
-      <div class="panel hidden" id="panelNodes">
-        <div class="panel-title">
-          <span><span class="icon">◆</span> Lattice Nodes</span>
-        </div>
-        <div class="panel-flavor">
-          Simple anchor points that keep Sparks from drifting back into the void.
-        </div>
-        <div class="row small">
-          Each Node generates <span class="inline-stat" id="nodeBaseRateText">0.5</span> Sparks per second,
-          scaled by engine stability.
-        </div>
-        <div class="row small">
-          Current cost: <span id="nodeCostText" class="inline-stat">10</span> Sparks
-        </div>
-        <div class="row small">
-          You own <span id="nodeCountText" class="inline-stat">0</span> Nodes.
-        </div>
-        <button id="buyNodeBtn">Assemble Node</button>
+        <div id="generatorsList"></div>
       </div>
 
       <!-- Stabilize panel (prestige) -->
@@ -327,14 +355,19 @@
           <span><span class="icon">⌘</span> Stabilization Cycle</span>
         </div>
         <div class="panel-flavor">
-          Collapse the current attempt into a cleaner pattern and keep what the engine learned.
+          Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
         </div>
         <div class="row small">
-          Reset Sparks and Nodes to gain Stabilizers based on total Sparks this cycle.
+          Resets Sparks and generators, but you keep Stabilizers and tuning.
         </div>
         <div class="row small">
-          Potential yield: <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
-          (current run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
+          Raw progress toward next Stabilizer:
+          <span id="stabilizeProgress" class="inline-stat">0.00</span>
+        </div>
+        <div class="row small">
+          Actual yield on stabilize:
+          <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
+          (run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
         </div>
         <button id="stabilizeBtn">Stabilize Flow</button>
       </div>
@@ -345,36 +378,104 @@
           <span><span class="icon">✦</span> Engine Tuning</span>
         </div>
         <div class="panel-flavor">
-          Tiny changes in how Sparks resonate can echo through the entire lattice.
+          Subtle changes in resonance shift how every construct behaves.
+          Tuning is slow, but it echoes through all layers.
         </div>
         <div class="row small">
-          Global Spark multiplier: x<span id="sparkMultText" class="inline-stat">1</span>
+          Global Spark multiplier: x<span id="sparkMultText" class="inline-stat">1.00</span>
         </div>
         <div class="row small">
-          Upgrade: <strong>Resonant Coils</strong><br>
+          <strong>Resonant Coils</strong><br>
           <span class="small">
-            Spend 1 Stabilizer to increase Spark gain by x1.2.
-            The coils hum louder with each adjustment.
+            Spend 1 Stabilizer to increase all Spark gain by x1.2.
+            Each adjustment raises the underlying hum of the engine.
           </span>
         </div>
-        <button id="buySparkMultBtn">
-          Tune Resonant Coils (cost 1 Stabilizer)
-        </button>
+        <div class="gen-actions">
+          <button id="buySparkMultBtn">
+            Tune Resonant Coils (cost 1 Stabilizer)
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
   <script>
+    // ---------- CONFIG ----------
+
+    const SAVE_KEY = "fracturedEngineSave_v2";
+    const INTRO_KEY = "fracturedEngineIntroSeen";
+
+    // Generator tiers: at least 5 before prestige
+    const generators = [
+      {
+        id: "c1",
+        name: "Ember Conduits",
+        shortLabel: "Conduit",
+        icon: "◆",
+        baseRate: 0.3,
+        baseCost: 10,
+        costGrowth: 1.15,
+        unlockAtSparks: 0,
+        flavor: "Thin channels that keep loose Sparks from drifting away."
+      },
+      {
+        id: "c2",
+        name: "Pulse Relays",
+        shortLabel: "Relay",
+        icon: "▶",
+        baseRate: 2,
+        baseCost: 120,
+        costGrowth: 1.16,
+        unlockAtSparks: 80,
+        flavor: "Rhythmic arrays that turn static flows into steady pulses."
+      },
+      {
+        id: "c3",
+        name: "Flux Weavers",
+        shortLabel: "Weaver",
+        icon: "✺",
+        baseRate: 10,
+        baseCost: 900,
+        costGrowth: 1.17,
+        unlockAtSparks: 600,
+        flavor: "Weave multiple streams of Sparks into a coherent current."
+      },
+      {
+        id: "c4",
+        name: "Core Looms",
+        shortLabel: "Loom",
+        icon: "▣",
+        baseRate: 45,
+        baseCost: 4800,
+        costGrowth: 1.18,
+        unlockAtSparks: 3200,
+        flavor: "Massive frames that spin Sparks into dense, reusable patterns."
+      },
+      {
+        id: "c5",
+        name: "Singularity Seeds",
+        shortLabel: "Seed",
+        icon: "◎",
+        baseRate: 200,
+        baseCost: 24000,
+        costGrowth: 1.19,
+        unlockAtSparks: 16000,
+        flavor: "Proto cores that bend local rules, feeding on their own output."
+      }
+    ];
+
+    // ---------- STATE ----------
+
     const state = {
       sparks: 0,
-      nodes: 0,
       stabilizers: 0,
       sparkMultiplier: 1,
-      nodeBaseCost: 10,
-      nodeCostGrowth: 1.15,
-      nodeBaseRate: 0.5,
-      totalSparksThisRun: 0
+      totalSparksThisRun: 0,
+      genCounts: new Array(generators.length).fill(0)
     };
+
+    // ---------- UTILS ----------
 
     function formatNumber(x) {
       if (x >= 1e9) return x.toExponential(2);
@@ -383,18 +484,36 @@
       return x.toFixed(2);
     }
 
-    function nodeCost() {
-      return state.nodeBaseCost * Math.pow(state.nodeCostGrowth, state.nodes);
+    function formatSmall(x) {
+      if (x >= 100) return x.toFixed(0);
+      if (x >= 10) return x.toFixed(1);
+      return x.toFixed(2);
+    }
+
+    function genCost(index) {
+      const gen = generators[index];
+      return gen.baseCost * Math.pow(gen.costGrowth, state.genCounts[index]);
     }
 
     function sparksPerSecond() {
-      return state.nodes * state.nodeBaseRate * state.sparkMultiplier;
+      let total = 0;
+      generators.forEach((gen, i) => {
+        total += state.genCounts[i] * gen.baseRate;
+      });
+      return total * state.sparkMultiplier;
     }
 
-    function stabilizerGain() {
+    function stabilizerRawGain() {
+      // Raw decimal to show progress even before 1
       const base = Math.pow(state.totalSparksThisRun, 0.6) / 100;
-      return Math.floor(base);
+      return base;
     }
+
+    function stabilizerGainFloored() {
+      return Math.floor(stabilizerRawGain());
+    }
+
+    // ---------- CORE LOGIC ----------
 
     function gainSparks(amount) {
       state.sparks += amount;
@@ -409,79 +528,96 @@
     function hardResetRun(keepMeta = true) {
       const keepStabs = keepMeta ? state.stabilizers : 0;
       const keepMult = keepMeta ? state.sparkMultiplier : 1;
+      const keepGens = keepMeta ? state.genCounts.slice() : new Array(generators.length).fill(0);
 
       state.sparks = 0;
-      state.nodes = 0;
       state.totalSparksThisRun = 0;
       state.stabilizers = keepStabs;
       state.sparkMultiplier = keepMult;
+      state.genCounts = keepGens;
     }
 
     function stabilize() {
-      const gain = stabilizerGain();
-      if (gain <= 0) return;
-      state.stabilizers += gain;
+      const gainInt = stabilizerGainFloored();
+      if (gainInt <= 0) return;
+      state.stabilizers += gainInt;
       hardResetRun(true);
       saveGame();
     }
 
+    // ---------- UI BUILD ----------
+
+    function buildGeneratorUI() {
+      const list = document.getElementById("generatorsList");
+      list.innerHTML = "";
+
+      generators.forEach((gen, index) => {
+        const row = document.createElement("div");
+        row.className = "gen-row hidden";
+        row.id = "genRow_" + gen.id;
+
+        row.innerHTML = `
+          <div class="gen-header">
+            <div class="gen-left">
+              <span class="gen-icon">${gen.icon}</span>
+              <span class="gen-name">${gen.name}</span>
+            </div>
+            <div class="gen-count">
+              Owned: <span id="genCount_${gen.id}" class="inline-stat">0</span>
+            </div>
+          </div>
+          <div class="gen-body small">
+            Produces <span class="inline-stat">${gen.baseRate.toFixed(2)}</span> Sparks per second each,
+            scaled by tuning.<br>
+            Cost: <span id="genCost_${gen.id}" class="inline-stat">${formatNumber(gen.baseCost)}</span> Sparks
+          </div>
+          <div class="gen-flavor">
+            ${gen.flavor}
+          </div>
+          <div class="gen-actions">
+            <button id="genBuy_${gen.id}">Construct ${gen.shortLabel}</button>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    // ---------- VISIBILITY & HIGHLIGHTS ----------
+
     function updateVisibility() {
-      const panelNodes = document.getElementById("panelNodes");
+      // Generator rows unlock as you progress
+      generators.forEach((gen, index) => {
+        const row = document.getElementById("genRow_" + gen.id);
+        if (!row) return;
+
+        const unlocked = state.totalSparksThisRun >= gen.unlockAtSparks || state.genCounts[index] > 0;
+        if (unlocked) {
+          row.classList.remove("hidden");
+        }
+      });
+
+      // Count how many generator types are actually used
+      let activeGenTypes = 0;
+      generators.forEach((_, index) => {
+        if (state.genCounts[index] > 0) activeGenTypes += 1;
+      });
+
       const panelStabilize = document.getElementById("panelStabilize");
       const panelUpgrades = document.getElementById("panelUpgrades");
 
-      // Show Nodes once you have a few Sparks or at least one Node
-      if (state.sparks >= 5 || state.nodes > 0) {
-        panelNodes.classList.remove("hidden");
-      }
+      // Unlock prestige after you are actually using at least 4 generator types,
+      // or as a fallback once the run is huge
+      const canSeePrestige =
+        activeGenTypes >= 4 || state.totalSparksThisRun >= 50000 || state.stabilizers > 0;
 
-      // Show Stabilize once total Sparks this run is decently high
-      if (state.totalSparksThisRun >= 100 || state.stabilizers > 0) {
+      if (canSeePrestige) {
         panelStabilize.classList.remove("hidden");
       }
 
-      // Show Upgrades once you have any Stabilizers
+      // Upgrades visible once you ever have Stabilizers
       if (state.stabilizers > 0) {
         panelUpgrades.classList.remove("hidden");
       }
-    }
-
-    function updateUI() {
-      // Resources
-      document.getElementById("sparksDisplay").textContent = formatNumber(state.sparks);
-      document.getElementById("nodesDisplay").textContent = state.nodes.toString();
-      document.getElementById("stabilizersDisplay").textContent = state.stabilizers.toString();
-      document.getElementById("spsDisplay").textContent = formatNumber(sparksPerSecond());
-
-      // Nodes panel
-      document.getElementById("nodeBaseRateText").textContent = state.nodeBaseRate.toFixed(2);
-      document.getElementById("nodeCostText").textContent = formatNumber(nodeCost());
-      document.getElementById("nodeCountText").textContent = state.nodes.toString();
-
-      // Stabilize panel
-      document.getElementById("stabilizePreview").textContent = stabilizerGain().toString();
-      document.getElementById("runTotalSparks").textContent = formatNumber(state.totalSparksThisRun);
-
-      // Upgrades panel
-      document.getElementById("sparkMultText").textContent = state.sparkMultiplier.toFixed(2);
-
-      // Affordable highlighting
-      const buyNodeBtn = document.getElementById("buyNodeBtn");
-      const buySparkMultBtn = document.getElementById("buySparkMultBtn");
-      const stabilizeBtn = document.getElementById("stabilizeBtn");
-
-      const canAffordNode = state.sparks >= nodeCost();
-      const canAffordSparkMult = state.stabilizers >= 1;
-      const canStabilize = stabilizerGain() > 0;
-
-      toggleAffordable(buyNodeBtn, canAffordNode);
-      toggleAffordable(buySparkMultBtn, canAffordSparkMult);
-      toggleAffordable(stabilizeBtn, canStabilize);
-
-      // Disable buttons if literally useless
-      stabilizeBtn.disabled = !canStabilize;
-
-      updateVisibility();
     }
 
     function toggleAffordable(element, canAfford) {
@@ -493,43 +629,108 @@
       }
     }
 
+    // ---------- UI UPDATE ----------
+
+    function updateUI() {
+      // Top bar
+      document.getElementById("sparksDisplay").textContent = formatNumber(state.sparks);
+      document.getElementById("stabilizersDisplay").textContent = formatNumber(state.stabilizers);
+      document.getElementById("spsDisplay").textContent = formatNumber(sparksPerSecond());
+
+      // Generators
+      generators.forEach((gen, index) => {
+        const countSpan = document.getElementById("genCount_" + gen.id);
+        const costSpan = document.getElementById("genCost_" + gen.id);
+        const button = document.getElementById("genBuy_" + gen.id);
+        if (!countSpan || !costSpan || !button) return;
+
+        const cost = genCost(index);
+        countSpan.textContent = state.genCounts[index].toString();
+        costSpan.textContent = formatNumber(cost);
+
+        const canAfford = state.sparks >= cost;
+        toggleAffordable(button, canAfford);
+      });
+
+      // Prestige panel
+      const raw = stabilizerRawGain();
+      const floored = stabilizerGainFloored();
+      document.getElementById("stabilizeProgress").textContent = formatSmall(raw);
+      document.getElementById("stabilizePreview").textContent = floored.toString();
+      document.getElementById("runTotalSparks").textContent = formatNumber(state.totalSparksThisRun);
+
+      const stabilizeBtn = document.getElementById("stabilizeBtn");
+      const canStabilizeNow = floored > 0;
+      toggleAffordable(stabilizeBtn, canStabilizeNow);
+      stabilizeBtn.disabled = !canStabilizeNow;
+
+      // Upgrades
+      document.getElementById("sparkMultText").textContent = state.sparkMultiplier.toFixed(2);
+      const buySparkMultBtn = document.getElementById("buySparkMultBtn");
+      const canBuyMult = state.stabilizers >= 1;
+      toggleAffordable(buySparkMultBtn, canBuyMult);
+
+      updateVisibility();
+    }
+
+    // ---------- SAVE / LOAD ----------
+
     function saveGame() {
       const saveData = JSON.stringify(state);
-      localStorage.setItem("fracturedEngineSave_v1", saveData);
+      localStorage.setItem(SAVE_KEY, saveData);
     }
 
     function loadGame() {
-      const raw = localStorage.getItem("fracturedEngineSave_v1");
-      if (!raw) return;
+      const raw = localStorage.getItem(SAVE_KEY);
+      if (!raw) return false;
       try {
         const data = JSON.parse(raw);
-        Object.assign(state, data);
+
+        state.sparks = data.sparks ?? 0;
+        state.stabilizers = data.stabilizers ?? 0;
+        state.sparkMultiplier = data.sparkMultiplier ?? 1;
+        state.totalSparksThisRun = data.totalSparksThisRun ?? 0;
+        if (Array.isArray(data.genCounts)) {
+          state.genCounts = data.genCounts.slice(0, generators.length);
+          while (state.genCounts.length < generators.length) {
+            state.genCounts.push(0);
+          }
+        } else {
+          state.genCounts = new Array(generators.length).fill(0);
+        }
+        return true;
       } catch (e) {
         console.error("Save load failed", e);
+        return false;
       }
     }
 
+    // ---------- BUTTONS & INTRO ----------
+
     function setupButtons() {
-      document.getElementById("gainSparkBtn").onclick = () => {
-        gainSparks(1 * state.sparkMultiplier);
-        updateUI();
-      };
+      // Generator buy buttons
+      generators.forEach((gen, index) => {
+        const btn = document.getElementById("genBuy_" + gen.id);
+        if (!btn) return;
+        btn.onclick = () => {
+          const cost = genCost(index);
+          if (state.sparks >= cost) {
+            state.sparks -= cost;
+            state.genCounts[index] += 1;
+            updateUI();
+            saveGame();
+          }
+        };
+      });
 
-      document.getElementById("buyNodeBtn").onclick = () => {
-        const cost = nodeCost();
-        if (state.sparks >= cost) {
-          state.sparks -= cost;
-          state.nodes += 1;
-          updateUI();
-        }
-      };
-
-      document.getElementById("stabilizeBtn").onclick = () => {
+      const stabilizeBtn = document.getElementById("stabilizeBtn");
+      stabilizeBtn.onclick = () => {
         stabilize();
         updateUI();
       };
 
-      document.getElementById("buySparkMultBtn").onclick = () => {
+      const multBtn = document.getElementById("buySparkMultBtn");
+      multBtn.onclick = () => {
         if (state.stabilizers >= 1) {
           state.stabilizers -= 1;
           state.sparkMultiplier *= 1.2;
@@ -542,12 +743,12 @@
       introBtn.onclick = () => {
         const overlay = document.getElementById("introOverlay");
         overlay.classList.add("hidden");
-        localStorage.setItem("fracturedEngineIntroSeen", "1");
+        localStorage.setItem(INTRO_KEY, "1");
       };
     }
 
     function setupIntroOverlay() {
-      const seen = localStorage.getItem("fracturedEngineIntroSeen");
+      const seen = localStorage.getItem(INTRO_KEY);
       const overlay = document.getElementById("introOverlay");
       if (!seen) {
         overlay.classList.remove("hidden");
@@ -555,6 +756,8 @@
         overlay.classList.add("hidden");
       }
     }
+
+    // ---------- MAIN LOOP ----------
 
     let lastTime = performance.now();
 
@@ -572,8 +775,15 @@
       requestAnimationFrame(gameLoop);
     }
 
-    // Init
-    loadGame();
+    // ---------- INIT ----------
+
+    buildGeneratorUI();
+    const hadSave = loadGame();
+    if (!hadSave) {
+      // Give a tiny starting buffer so you can buy the first generator without clicking
+      state.sparks = 10;
+      state.totalSparksThisRun = 0;
+    }
     setupButtons();
     setupIntroOverlay();
     updateUI();
