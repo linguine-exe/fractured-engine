@@ -9,7 +9,7 @@
     }
 
     body {
-      background: radial-gradient(circle at top, #17172b 0%, #050509 55%, #020208 100%);
+      background: #050509;
       color: #f5f5f5;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
@@ -24,12 +24,12 @@
     #resourceBar {
       width: 100%;
       padding: 8px 16px;
-      background: rgba(5, 5, 15, 0.9);
+      background: #080810;
       border-bottom: 1px solid #222233;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
-      gap: 16px;
+      gap: 18px;
       font-size: 14px;
     }
 
@@ -65,12 +65,12 @@
     }
 
     #gameInner {
-      max-width: 760px;
+      max-width: 900px;
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
+      gap: 16px;
       text-align: center;
     }
 
@@ -79,24 +79,22 @@
       letter-spacing: 0.12em;
       text-transform: uppercase;
       margin: 4px 0 2px 0;
-      opacity: 0.92;
+      opacity: 0.9;
     }
 
     #subtitle {
       font-size: 11px;
       opacity: 0.7;
-      margin-bottom: 8px;
+      margin-bottom: 0;
     }
 
     .panel {
       border-radius: 8px;
-      border: 1px solid rgba(60, 60, 90, 0.8);
-      background: radial-gradient(circle at top, #171727 0%, #050510 60%);
+      border: 1px solid #262638;
+      background: #10101a;
       padding: 10px 12px;
       width: 100%;
-      max-width: 540px;
       text-align: left;
-      box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
     }
 
     .panel-title {
@@ -128,24 +126,24 @@
 
     .small {
       font-size: 11px;
-      opacity: 0.78;
+      opacity: 0.8;
     }
 
     button {
       padding: 6px 10px;
       margin: 4px 4px 0 0;
-      background: #181825;
-      border: 1px solid #444466;
+      background: #151524;
+      border: 1px solid #3b3b55;
       color: #f5f5f5;
       border-radius: 4px;
       cursor: pointer;
       font-size: 12px;
-      transition: transform 0.05s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+      transition: transform 0.05s ease-out, border-color 0.12s ease-out, box-shadow 0.12s ease-out;
     }
 
     button:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 0 8px rgba(90, 130, 255, 0.4);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.45);
     }
 
     button:disabled {
@@ -155,8 +153,7 @@
     }
 
     .affordable {
-      border-color: #91a5ff;
-      box-shadow: 0 0 10px rgba(120, 160, 255, 0.65);
+      border-color: #9caeff;
     }
 
     .inline-stat {
@@ -167,9 +164,23 @@
       display: none !important;
     }
 
+    /* Layout: 2-column for Sparks tab on larger screens */
+    #sparksLayout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (min-width: 900px) {
+      #sparksLayout {
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.2fr);
+      }
+    }
+
     /* Generators */
     .gen-row {
-      border-top: 1px solid rgba(70, 70, 110, 0.9);
+      border-top: 1px solid #262638;
       padding-top: 6px;
       margin-top: 6px;
     }
@@ -224,7 +235,7 @@
     #introOverlay {
       position: fixed;
       inset: 0;
-      background: radial-gradient(circle at top, rgba(40, 50, 120, 0.7) 0%, rgba(0, 0, 10, 0.95) 55%);
+      background: rgba(2, 2, 8, 0.9);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -234,11 +245,11 @@
     #introModal {
       width: 90%;
       max-width: 480px;
-      background: #050510;
+      background: #10101a;
       border-radius: 10px;
-      border: 1px solid #444466;
+      border: 1px solid #3b3b55;
       padding: 16px 18px;
-      box-shadow: 0 0 20px rgba(10, 10, 40, 0.95);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
       text-align: left;
     }
 
@@ -269,7 +280,7 @@
 
     /* Nav bar at bottom */
     #navBar {
-      margin-top: 12px;
+      margin-top: 4px;
       display: flex;
       justify-content: center;
       gap: 8px;
@@ -280,12 +291,12 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
-      background: #0c0c15;
+      background: #0b0b14;
     }
 
     .nav-btn.active {
-      border-color: #9fb3ff;
-      box-shadow: 0 0 10px rgba(140, 170, 255, 0.7);
+      border-color: #9caeff;
+      background: #181826;
     }
 
     /* Upgrades */
@@ -314,25 +325,17 @@
       font-size: 16px;
       padding: 0;
       margin: 0;
-      background: #151522;
+      background: #151524;
     }
 
     .upgrade-icon-btn.purchased {
       opacity: 0.45;
-      box-shadow: none;
-      border-color: #55556a;
-    }
-
-    .upgrade-icon-btn.locked {
-      opacity: 0.25;
-      cursor: default;
-      box-shadow: none;
-      border-color: #303040;
+      border-color: #50506a;
     }
 
     #upgradeDetails {
-      margin-top: 4px;
-      border-top: 1px solid rgba(80, 80, 120, 0.9);
+      margin-top: 6px;
+      border-top: 1px solid #262638;
       padding-top: 6px;
       min-height: 60px;
     }
@@ -424,41 +427,43 @@
 
       <!-- Sparks tab content -->
       <div id="tabSparks">
-        <!-- Generators panel -->
-        <div class="panel" id="panelGenerators">
-          <div class="panel-title">
-            <span><span class="icon">◆</span> Sparks Lattice</span>
+        <div id="sparksLayout">
+          <!-- Generators panel -->
+          <div class="panel" id="panelGenerators">
+            <div class="panel-title">
+              <span><span class="icon">◆</span> Sparks Lattice</span>
+            </div>
+            <div class="panel-flavor">
+              The first layer of the new engine. Simple constructs that coax Sparks into motion.
+            </div>
+            <div class="row small">
+              Generators produce Sparks automatically. Higher constructs unlock as the lattice grows.
+            </div>
+            <div id="generatorsList"></div>
           </div>
-          <div class="panel-flavor">
-            The first layer of the new engine. Simple constructs that coax Sparks into motion.
-          </div>
-          <div class="row small">
-            Generators produce Sparks automatically. Higher constructs unlock as the lattice grows.
-          </div>
-          <div id="generatorsList"></div>
-        </div>
 
-        <!-- Stabilize panel (prestige) -->
-        <div class="panel hidden" id="panelStabilize">
-          <div class="panel-title">
-            <span><span class="icon">⌘</span> Stabilization Cycle</span>
+          <!-- Stabilize panel (prestige) -->
+          <div class="panel hidden" id="panelStabilize">
+            <div class="panel-title">
+              <span><span class="icon">⌘</span> Stabilization Cycle</span>
+            </div>
+            <div class="panel-flavor">
+              Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
+            </div>
+            <div class="row small">
+              Resets Sparks and Spark-layer upgrades, but you keep Stabilizers and higher tuning.
+            </div>
+            <div class="row small">
+              Raw progress toward next Stabilizer:
+              <span id="stabilizeProgress" class="inline-stat">0.00</span>
+            </div>
+            <div class="row small">
+              Actual yield on stabilize:
+              <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
+              (run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
+            </div>
+            <button id="stabilizeBtn">Stabilize Flow</button>
           </div>
-          <div class="panel-flavor">
-            Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
-          </div>
-          <div class="row small">
-            Resets Sparks and Spark-layer upgrades, but you keep Stabilizers and higher tuning.
-          </div>
-          <div class="row small">
-            Raw progress toward next Stabilizer:
-            <span id="stabilizeProgress" class="inline-stat">0.00</span>
-          </div>
-          <div class="row small">
-            Actual yield on stabilize:
-            <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
-            (run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
-          </div>
-          <button id="stabilizeBtn">Stabilize Flow</button>
         </div>
       </div>
 
@@ -516,7 +521,6 @@
     const SAVE_KEY = "fracturedEngineSave_v3";
     const INTRO_KEY = "fracturedEngineIntroSeen";
 
-    // Generators: faster early game, 5 tiers
     const generators = [
       {
         id: "g1",
@@ -575,7 +579,6 @@
       }
     ];
 
-    // Upgrades
     const sparkUpgrades = [
       {
         id: "u_spark_conduit_double",
@@ -599,7 +602,7 @@
         effectText: "Reduces Ember Conduit cost scaling.",
         type: "reduce_cost_growth",
         targetGenIndex: 0,
-        value: 0.04   // subtract from growth
+        value: 0.04
       },
       {
         id: "u_spark_echoes",
@@ -641,7 +644,7 @@
       }
     };
 
-    let selectedUpgrade = null; // { type: "sparks"|"stabilizers", def }
+    let selectedUpgrade = null;
 
     // ---------- UTILS ----------
 
@@ -683,7 +686,7 @@
         mult *= 2;
       }
       if (isUpgradePurchased("sparks", "u_spark_echoes")) {
-        const extra = 1 + Math.log10(1 + state.sparks) / 4; // gentle but noticeable
+        const extra = 1 + Math.log10(1 + state.sparks) / 4;
         mult *= extra;
       }
       return mult;
@@ -703,9 +706,7 @@
     }
 
     function stabilizerRawGain() {
-      // Show decimal progress
-      const base = Math.pow(state.totalSparksThisRun, 0.6) / 80;
-      return base;
+      return Math.pow(state.totalSparksThisRun, 0.6) / 80;
     }
 
     function stabilizerGainFloored() {
@@ -735,7 +736,7 @@
       const gainInt = stabilizerGainFloored();
       if (gainInt <= 0) return;
       state.stabilizers += gainInt;
-      resetSparkLayer(); // Spark layer upgrades and gens reset
+      resetSparkLayer();
       saveGame();
     }
 
@@ -806,7 +807,6 @@
     // ---------- VISIBILITY & HIGHLIGHTS ----------
 
     function updateVisibility() {
-      // Generator rows unlock as you progress
       generators.forEach((gen, index) => {
         const row = document.getElementById("genRow_" + gen.id);
         if (!row) return;
@@ -817,14 +817,12 @@
         }
       });
 
-      // Count how many generator types are active
       let activeGenTypes = 0;
       generators.forEach((_, index) => {
         if (state.genCounts[index] > 0) activeGenTypes += 1;
       });
 
       const panelStabilize = document.getElementById("panelStabilize");
-
       const canSeePrestige =
         activeGenTypes >= 3 || state.totalSparksThisRun >= 4000 || state.stabilizers > 0;
 
@@ -871,7 +869,6 @@
 
       state.upgrades[type][id] = true;
 
-      // Apply immediate effects
       if (upg.type === "global_mult") {
         state.sparkMultiplier *= upg.value;
       }
@@ -880,7 +877,6 @@
     }
 
     function updateUpgradeButtonsUI() {
-      // Spark upgrades
       sparkUpgrades.forEach(upg => {
         const btn = document.getElementById("upgBtn_sparks_" + upg.id);
         if (!btn) return;
@@ -888,7 +884,7 @@
         const purchased = isUpgradePurchased("sparks", upg.id);
         const affordable = canAffordUpgrade(upg);
 
-        btn.classList.remove("purchased", "locked", "affordable");
+        btn.classList.remove("purchased", "affordable");
         if (purchased) {
           btn.classList.add("purchased");
           btn.disabled = true;
@@ -900,7 +896,6 @@
         }
       });
 
-      // Stabilizer upgrades
       stabUpgrades.forEach(upg => {
         const btn = document.getElementById("upgBtn_stab_" + upg.id);
         if (!btn) return;
@@ -908,7 +903,7 @@
         const purchased = isUpgradePurchased("stabilizers", upg.id);
         const affordable = canAffordUpgrade(upg);
 
-        btn.classList.remove("purchased", "locked", "affordable");
+        btn.classList.remove("purchased", "affordable");
         if (purchased) {
           btn.classList.add("purchased");
           btn.disabled = true;
@@ -978,12 +973,10 @@
     // ---------- UI UPDATE ----------
 
     function updateUI() {
-      // Top bar
       document.getElementById("sparksDisplay").textContent = formatNumber(state.sparks);
       document.getElementById("stabilizersDisplay").textContent = formatNumber(state.stabilizers);
       document.getElementById("spsDisplay").textContent = formatNumber(sparksPerSecond());
 
-      // Generators
       generators.forEach((gen, index) => {
         const countSpan = document.getElementById("genCount_" + gen.id);
         const costSpan = document.getElementById("genCost_" + gen.id);
@@ -998,7 +991,6 @@
         toggleAffordable(button, canAfford);
       });
 
-      // Prestige panel
       const raw = stabilizerRawGain();
       const floored = stabilizerGainFloored();
       document.getElementById("stabilizeProgress").textContent = formatSmall(raw);
@@ -1010,7 +1002,6 @@
       toggleAffordable(stabilizeBtn, canStabilizeNow);
       stabilizeBtn.disabled = !canStabilizeNow;
 
-      // Upgrades
       updateUpgradeButtonsUI();
       updateUpgradeDetails();
 
@@ -1163,22 +1154,17 @@
     buildUpgradesUI();
     const hadSave = loadGame();
     if (!hadSave) {
-      // Slight kickstart so first Conduit is instant
       state.sparks = 25;
       state.totalSparksThisRun = 0;
       state.upgrades = { sparks: {}, stabilizers: {} };
     }
 
     setupGeneratorButtons();
-    setupUpgradesUIAfterBuild();
+    setupUpgradeButtons();
     setupIntroOverlay();
     setupNav();
     updateUI();
     requestAnimationFrame(gameLoop);
-
-    function setupUpgradesUIAfterBuild() {
-      setupUpgradeButtons();
-    }
   </script>
 </body>
 </html>
