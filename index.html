@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Fractured Engine - Prototype</title>
+  <style>
+    body {
+      background: #050509;
+      color: #f5f5f5;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      margin: 0;
+      padding: 16px;
+    }
+
+    h1, h2 {
+      margin: 0 0 8px 0;
+    }
+
+    .row {
+      margin-bottom: 12px;
+    }
+
+    .resource {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    button {
+      padding: 6px 10px;
+      margin: 4px 4px 0 0;
+      background: #181825;
+      border: 1px solid #444;
+      color: #f5f5f5;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .small {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+
+    .panel {
+      border: 1px solid #222;
+      padding: 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: #0b0b12;
+    }
+  </style>
+</head>
+<body>
+  <h1>Fractured Engine - Prototype</h1>
+
+  <div class="panel">
+    <div class="resource">
+      ● Fragments: <span id="fragments">0</span>
+    </div>
+    <div class="resource">
+      ◆ Nodes: <span id="nodes">0</span>
+    </div>
+    <div class="resource">
+      ⌘ Stabilizers: <span id="stabilizers">0</span>
+    </div>
+    <div class="small">
+      Fragment gain per second: <span id="fps">0</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Core Actions</h2>
+    <button id="gainFragmentBtn">Click: gain 1 Fragment</button>
+  </div>
+
+  <div class="panel">
+    <h2>Nodes</h2>
+    <div class="small">
+      Each Node generates 0.5 Fragments per second.
+    </div>
+    <div class="row small">
+      Cost: <span id="nodeCost">10</span> Fragments
+    </div>
+    <button id="buyNodeBtn">Buy Node</button>
+  </div>
+
+  <div class="panel">
+    <h2>Prestige - Stabilize</h2>
+    <div class="small">
+      Reset Fragments and Nodes for Stabilizers.<br>
+      Gain based on your total Fragments this run.
+    </div>
+    <div class="row small">
+      On stabilize you would gain:
+      <span id="stabilizeGainPreview">0</span> Stabilizers
+    </div>
+    <button id="stabilizeBtn">Stabilize</button>
+  </div>
+
+  <div class="panel">
+    <h2>Upgrades (Stabilizers)</h2>
+    <div class="row small">
+      Fragment multiplier: x<span id="fragMultDisplay">1</span>
+    </div>
+    <button id="buyFragMultBtn">
+      Spend 1 Stabilizer to increase Fragment multiplier by x1.2
+    </button>
+  </div>
+
+  <script>
+    const state = {
+      fragments: 0,
+      nodes: 0,
+      stabilizers: 0,
+      fragmentMultiplier: 1,
+      nodeBaseCost: 10,
+      nodeCostGrowth: 1.15,
+      totalFragmentsThisRun: 0
+    };
+
+    function format(x) {
+      if (x >= 1e9) return x.toExponential(2);
+      if (x >= 1e6) return (x / 1e6).toFixed(2) + "M";
+      if (x >= 1e3) return (x / 1e3).toFixed(2) + "K";
+      return x.toFixed(2);
+    }
+
+    function nodeCost() {
+      return state.nodeBaseCost * Math.pow(state.nodeCostGrowth, state.nodes);
+    }
+
+    function stabilizerGain() {
+      const base = Math.pow(state.totalFragmentsThisRun, 0.6) / 100;
+      return Math.floor(base);
+    }
+
+    function updateUI() {
+      document.getElementById("fragments").textContent = format(state.fragments);
+      document.getElementById("nodes").textContent = state.nodes.toString();
+      document.getElementById("stabilizers").textContent = state.stabilizers.toString();
+      document.getElementById("nodeCost").textContent = format(nodeCost());
+
+      const fps = state.nodes * 0.5 * state.fragmentMultiplier;
+      document.getElementById("fps").textContent = format(fps);
+
+      document.getElementById("stabilizeGainPreview").textContent = stabilizerGain().toString();
+      document.getElementById("fragMultDisplay").textContent = state.fragmentMultiplier.toFixed(2);
+    }
+
+    function gainFragments(amount) {
+      state.fragments += amount;
+      state.totalFragmentsThisRun += amount;
+    }
+
+    function tick(dt) {
+      const fps = state.nodes * 0.5 * state.fragmentMultiplier;
+      gainFragments(fps * dt);
+    }
+
+    function hardResetRun(keepStabilizers = true) {
+      const keepStab = keepStabilizers ? state.stabilizers : 0;
+      const keepMult = keepStabilizers ? state.fragmentMultiplier : 1;
+
+      state.fragments = 0;
+      state.nodes = 0;
+      state.totalFragmentsThisRun = 0;
+      state.stabilizers = keepStab;
+      state.fragmentMultiplier = keepMult;
+    }
+
+    function stabilize() {
+      const gain = stabilizerGain();
+      if (gain <= 0) return;
+      state.stabilizers += gain;
+      hardResetRun(true);
+      saveGame();
+    }
+
+    function saveGame() {
+      const saveData = JSON.stringify(state);
+      localStorage.setItem("fracturedEngineSave", saveData);
+    }
+
+    function loadGame() {
+      const raw = localStorage.getItem("fracturedEngineSave");
+      if (!raw) return;
+      try {
+        const data = JSON.parse(raw);
+        Object.assign(state, data);
+      } catch (e) {
+        console.error("Save load failed", e);
+      }
+    }
+
+    function setupButtons() {
+      document.getElementById("gainFragmentBtn").onclick = () => {
+        gainFragments(1 * state.fragmentMultiplier);
+        updateUI();
+      };
+
+      document.getElementById("buyNodeBtn").onclick = () => {
+        const cost = nodeCost();
+        if (state.fragments >= cost) {
+          state.fragments -= cost;
+          state.nodes += 1;
+          updateUI();
+        }
+      };
+
+      document.getElementById("stabilizeBtn").onclick = () => {
+        stabilize();
+        updateUI();
+      };
+
+      document.getElementById("buyFragMultBtn").onclick = () => {
+        if (state.stabilizers >= 1) {
+          state.stabilizers -= 1;
+          state.fragmentMultiplier *= 1.2;
+          updateUI();
+          saveGame();
+        }
+      };
+    }
+
+    // Main loop
+    let lastTime = performance.now();
+    function gameLoop(now) {
+      const dt = (now - lastTime) / 1000;
+      lastTime = now;
+
+      tick(dt);
+      updateUI();
+
+      if (now % 1000 < 50) {
+        saveGame();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Init
+    loadGame();
+    setupButtons();
+    updateUI();
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
