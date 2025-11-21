@@ -267,7 +267,95 @@
       margin-top: 4px;
     }
 
-    /* Mobile adjustments */
+    /* Nav bar at bottom */
+    #navBar {
+      margin-top: 12px;
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .nav-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: #0c0c15;
+    }
+
+    .nav-btn.active {
+      border-color: #9fb3ff;
+      box-shadow: 0 0 10px rgba(140, 170, 255, 0.7);
+    }
+
+    /* Upgrades */
+    .upgrade-section-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      opacity: 0.8;
+      margin: 6px 0 4px 0;
+    }
+
+    .upgrade-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .upgrade-icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      padding: 0;
+      margin: 0;
+      background: #151522;
+    }
+
+    .upgrade-icon-btn.purchased {
+      opacity: 0.45;
+      box-shadow: none;
+      border-color: #55556a;
+    }
+
+    .upgrade-icon-btn.locked {
+      opacity: 0.25;
+      cursor: default;
+      box-shadow: none;
+      border-color: #303040;
+    }
+
+    #upgradeDetails {
+      margin-top: 4px;
+      border-top: 1px solid rgba(80, 80, 120, 0.9);
+      padding-top: 6px;
+      min-height: 60px;
+    }
+
+    #upgradeDetailsTitle {
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    #upgradeDetailsFlavor {
+      font-size: 11px;
+      opacity: 0.75;
+      margin-bottom: 4px;
+    }
+
+    #upgradeDetailsEffect,
+    #upgradeDetailsCost,
+    #upgradeDetailsCurrent {
+      font-size: 11px;
+      margin-bottom: 2px;
+    }
+
     @media (max-width: 600px) {
       #gameInner {
         max-width: 100%;
@@ -334,68 +422,90 @@
         <div id="subtitle">Prototype build - let the engine run itself</div>
       </div>
 
-      <!-- Generators panel -->
-      <div class="panel" id="panelGenerators">
-        <div class="panel-title">
-          <span><span class="icon">◆</span> Construct Lattice</span>
+      <!-- Sparks tab content -->
+      <div id="tabSparks">
+        <!-- Generators panel -->
+        <div class="panel" id="panelGenerators">
+          <div class="panel-title">
+            <span><span class="icon">◆</span> Sparks Lattice</span>
+          </div>
+          <div class="panel-flavor">
+            The first layer of the new engine. Simple constructs that coax Sparks into motion.
+          </div>
+          <div class="row small">
+            Generators produce Sparks automatically. Higher constructs unlock as the lattice grows.
+          </div>
+          <div id="generatorsList"></div>
         </div>
-        <div class="panel-flavor">
-          The first layer of the new engine. Simple constructs that coax Sparks into motion.
-          Let them work. They will feel slow at first.
+
+        <!-- Stabilize panel (prestige) -->
+        <div class="panel hidden" id="panelStabilize">
+          <div class="panel-title">
+            <span><span class="icon">⌘</span> Stabilization Cycle</span>
+          </div>
+          <div class="panel-flavor">
+            Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
+          </div>
+          <div class="row small">
+            Resets Sparks and Spark-layer upgrades, but you keep Stabilizers and higher tuning.
+          </div>
+          <div class="row small">
+            Raw progress toward next Stabilizer:
+            <span id="stabilizeProgress" class="inline-stat">0.00</span>
+          </div>
+          <div class="row small">
+            Actual yield on stabilize:
+            <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
+            (run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
+          </div>
+          <button id="stabilizeBtn">Stabilize Flow</button>
         </div>
-        <div class="row small">
-          Generators produce Sparks automatically. More complex constructs unlock as the engine stabilizes.
-        </div>
-        <div id="generatorsList"></div>
       </div>
 
-      <!-- Stabilize panel (prestige) -->
-      <div class="panel hidden" id="panelStabilize">
-        <div class="panel-title">
-          <span><span class="icon">⌘</span> Stabilization Cycle</span>
+      <!-- Upgrades tab content -->
+      <div id="tabUpgrades" class="hidden">
+        <div class="panel" id="panelUpgrades">
+          <div class="panel-title">
+            <span><span class="icon">✦</span> Engine Upgrades</span>
+          </div>
+          <div class="panel-flavor">
+            Small adjustments in the lattice shift how every construct behaves.
+            Upgrades here set the tone for the entire run.
+          </div>
+
+          <!-- Spark upgrades -->
+          <div class="upgrade-section">
+            <div class="upgrade-section-title">Spark Upgrades</div>
+            <div class="row small">
+              Purchased Spark upgrades are lost when you stabilize.
+            </div>
+            <div class="upgrade-grid" id="sparkUpgradesGrid"></div>
+          </div>
+
+          <!-- Stabilizer upgrades -->
+          <div class="upgrade-section">
+            <div class="upgrade-section-title">Stabilizer Upgrades</div>
+            <div class="row small">
+              Stabilizer upgrades persist through stabilizations.
+            </div>
+            <div class="upgrade-grid" id="stabUpgradesGrid"></div>
+          </div>
+
+          <!-- Details for hovered/selected upgrade -->
+          <div id="upgradeDetails">
+            <div id="upgradeDetailsTitle">Hover or tap an upgrade icon.</div>
+            <div id="upgradeDetailsFlavor"></div>
+            <div id="upgradeDetailsEffect"></div>
+            <div id="upgradeDetailsCost"></div>
+            <div id="upgradeDetailsCurrent"></div>
+          </div>
         </div>
-        <div class="panel-flavor">
-          Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
-        </div>
-        <div class="row small">
-          Resets Sparks and generators, but you keep Stabilizers and tuning.
-        </div>
-        <div class="row small">
-          Raw progress toward next Stabilizer:
-          <span id="stabilizeProgress" class="inline-stat">0.00</span>
-        </div>
-        <div class="row small">
-          Actual yield on stabilize:
-          <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
-          (run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
-        </div>
-        <button id="stabilizeBtn">Stabilize Flow</button>
       </div>
 
-      <!-- Upgrades panel (Stabilizer upgrades) -->
-      <div class="panel hidden" id="panelUpgrades">
-        <div class="panel-title">
-          <span><span class="icon">✦</span> Engine Tuning</span>
-        </div>
-        <div class="panel-flavor">
-          Subtle changes in resonance shift how every construct behaves.
-          Tuning is slow, but it echoes through all layers.
-        </div>
-        <div class="row small">
-          Global Spark multiplier: x<span id="sparkMultText" class="inline-stat">1.00</span>
-        </div>
-        <div class="row small">
-          <strong>Resonant Coils</strong><br>
-          <span class="small">
-            Spend 1 Stabilizer to increase all Spark gain by x1.2.
-            Each adjustment raises the underlying hum of the engine.
-          </span>
-        </div>
-        <div class="gen-actions">
-          <button id="buySparkMultBtn">
-            Tune Resonant Coils (cost 1 Stabilizer)
-          </button>
-        </div>
+      <!-- Nav bar -->
+      <div id="navBar">
+        <button class="nav-btn active" data-tab="sparks">Sparks</button>
+        <button class="nav-btn" data-tab="upgrades">Upgrades</button>
       </div>
     </div>
   </div>
@@ -403,65 +513,117 @@
   <script>
     // ---------- CONFIG ----------
 
-    const SAVE_KEY = "fracturedEngineSave_v2";
+    const SAVE_KEY = "fracturedEngineSave_v3";
     const INTRO_KEY = "fracturedEngineIntroSeen";
 
-    // Generator tiers: at least 5 before prestige
+    // Generators: faster early game, 5 tiers
     const generators = [
       {
-        id: "c1",
+        id: "g1",
         name: "Ember Conduits",
         shortLabel: "Conduit",
         icon: "◆",
-        baseRate: 0.3,
-        baseCost: 10,
-        costGrowth: 1.15,
+        baseRate: 1.0,
+        baseCost: 8,
+        costGrowth: 1.13,
         unlockAtSparks: 0,
-        flavor: "Thin channels that keep loose Sparks from drifting away."
+        flavor: "Thin channels that keep loose Sparks from leaking at bends."
       },
       {
-        id: "c2",
+        id: "g2",
         name: "Pulse Relays",
         shortLabel: "Relay",
         icon: "▶",
-        baseRate: 2,
-        baseCost: 120,
-        costGrowth: 1.16,
-        unlockAtSparks: 80,
+        baseRate: 6,
+        baseCost: 60,
+        costGrowth: 1.14,
+        unlockAtSparks: 40,
         flavor: "Rhythmic arrays that turn static flows into steady pulses."
       },
       {
-        id: "c3",
+        id: "g3",
         name: "Flux Weavers",
         shortLabel: "Weaver",
         icon: "✺",
-        baseRate: 10,
-        baseCost: 900,
-        costGrowth: 1.17,
-        unlockAtSparks: 600,
+        baseRate: 30,
+        baseCost: 320,
+        costGrowth: 1.16,
+        unlockAtSparks: 180,
         flavor: "Weave multiple streams of Sparks into a coherent current."
       },
       {
-        id: "c4",
+        id: "g4",
         name: "Core Looms",
         shortLabel: "Loom",
         icon: "▣",
-        baseRate: 45,
-        baseCost: 4800,
+        baseRate: 120,
+        baseCost: 1400,
         costGrowth: 1.18,
-        unlockAtSparks: 3200,
+        unlockAtSparks: 800,
         flavor: "Massive frames that spin Sparks into dense, reusable patterns."
       },
       {
-        id: "c5",
+        id: "g5",
         name: "Singularity Seeds",
         shortLabel: "Seed",
         icon: "◎",
-        baseRate: 200,
-        baseCost: 24000,
-        costGrowth: 1.19,
-        unlockAtSparks: 16000,
+        baseRate: 500,
+        baseCost: 4800,
+        costGrowth: 1.2,
+        unlockAtSparks: 2600,
         flavor: "Proto cores that bend local rules, feeding on their own output."
+      }
+    ];
+
+    // Upgrades
+    const sparkUpgrades = [
+      {
+        id: "u_spark_conduit_double",
+        name: "Reinforced Channels",
+        icon: "▴",
+        currency: "sparks",
+        cost: 120,
+        flavor: "Add extra plating where the first conduits twist and strain.",
+        effectText: "Doubles the production of Ember Conduits.",
+        type: "mult_gen_rate",
+        targetGenIndex: 0,
+        value: 2
+      },
+      {
+        id: "u_spark_conduit_scaling",
+        name: "Smoothed Pathways",
+        icon: "▤",
+        currency: "sparks",
+        cost: 260,
+        flavor: "Flow-friendly layouts that keep cost pressure from spiking.",
+        effectText: "Reduces Ember Conduit cost scaling.",
+        type: "reduce_cost_growth",
+        targetGenIndex: 0,
+        value: 0.04   // subtract from growth
+      },
+      {
+        id: "u_spark_echoes",
+        name: "Residual Echoes",
+        icon: "◌",
+        currency: "sparks",
+        cost: 520,
+        flavor: "Each idle Spark hums softly, adding to the background rhythm.",
+        effectText: "Boosts all Spark production based on unspent Sparks.",
+        type: "global_dep_boost"
+      }
+    ];
+
+    const stabUpgrades = [
+      {
+        id: "u_stab_resonant_coils",
+        name: "Resonant Coils",
+        icon: "✶",
+        currency: "stabilizers",
+        cost: 1,
+        flavor: "Tune the core frequency so that every construct vibrates in phase.",
+        effectText: "Increases all Spark production by x1.5 permanently.",
+        type: "global_mult",
+        value: 1.5
       }
     ];
 
@@ -472,8 +634,14 @@
       stabilizers: 0,
       sparkMultiplier: 1,
       totalSparksThisRun: 0,
-      genCounts: new Array(generators.length).fill(0)
+      genCounts: new Array(generators.length).fill(0),
+      upgrades: {
+        sparks: {},
+        stabilizers: {}
+      }
     };
+
+    let selectedUpgrade = null; // { type: "sparks"|"stabilizers", def }
 
     // ---------- UTILS ----------
 
@@ -490,22 +658,53 @@
       return x.toFixed(2);
     }
 
+    function isUpgradePurchased(type, id) {
+      return !!state.upgrades[type][id];
+    }
+
+    function effectiveCostGrowth(index) {
+      const gen = generators[index];
+      let g = gen.costGrowth;
+      if (isUpgradePurchased("sparks", "u_spark_conduit_scaling") && index === 0) {
+        g = Math.max(1.02, g - 0.04);
+      }
+      return g;
+    }
+
     function genCost(index) {
       const gen = generators[index];
-      return gen.baseCost * Math.pow(gen.costGrowth, state.genCounts[index]);
+      const growth = effectiveCostGrowth(index);
+      return gen.baseCost * Math.pow(growth, state.genCounts[index]);
+    }
+
+    function conduitRateMultiplier(index) {
+      let mult = 1;
+      if (isUpgradePurchased("sparks", "u_spark_conduit_double") && index === 0) {
+        mult *= 2;
+      }
+      if (isUpgradePurchased("sparks", "u_spark_echoes")) {
+        const extra = 1 + Math.log10(1 + state.sparks) / 4; // gentle but noticeable
+        mult *= extra;
+      }
+      return mult;
+    }
+
+    function genEffectiveRate(index) {
+      const base = generators[index].baseRate;
+      return base * conduitRateMultiplier(index);
     }
 
     function sparksPerSecond() {
       let total = 0;
-      generators.forEach((gen, i) => {
-        total += state.genCounts[i] * gen.baseRate;
+      generators.forEach((gen, index) => {
+        total += state.genCounts[index] * genEffectiveRate(index);
       });
       return total * state.sparkMultiplier;
     }
 
     function stabilizerRawGain() {
-      // Raw decimal to show progress even before 1
-      const base = Math.pow(state.totalSparksThisRun, 0.6) / 100;
+      // Show decimal progress
+      const base = Math.pow(state.totalSparksThisRun, 0.6) / 80;
       return base;
     }
 
@@ -525,23 +724,18 @@
       gainSparks(sps * dt);
     }
 
-    function hardResetRun(keepMeta = true) {
-      const keepStabs = keepMeta ? state.stabilizers : 0;
-      const keepMult = keepMeta ? state.sparkMultiplier : 1;
-      const keepGens = keepMeta ? state.genCounts.slice() : new Array(generators.length).fill(0);
-
+    function resetSparkLayer() {
       state.sparks = 0;
       state.totalSparksThisRun = 0;
-      state.stabilizers = keepStabs;
-      state.sparkMultiplier = keepMult;
-      state.genCounts = keepGens;
+      state.genCounts = new Array(generators.length).fill(0);
+      state.upgrades.sparks = {};
     }
 
     function stabilize() {
       const gainInt = stabilizerGainFloored();
       if (gainInt <= 0) return;
       state.stabilizers += gainInt;
-      hardResetRun(true);
+      resetSparkLayer(); // Spark layer upgrades and gens reset
       saveGame();
     }
 
@@ -567,8 +761,8 @@
             </div>
           </div>
           <div class="gen-body small">
-            Produces <span class="inline-stat">${gen.baseRate.toFixed(2)}</span> Sparks per second each,
-            scaled by tuning.<br>
+            Produces <span class="inline-stat">${gen.baseRate.toFixed(2)}</span> Sparks per second each
+            before upgrades.<br>
             Cost: <span id="genCost_${gen.id}" class="inline-stat">${formatNumber(gen.baseCost)}</span> Sparks
           </div>
           <div class="gen-flavor">
@@ -579,6 +773,33 @@
           </div>
         `;
         list.appendChild(row);
+      });
+    }
+
+    function buildUpgradesUI() {
+      const sparkGrid = document.getElementById("sparkUpgradesGrid");
+      const stabGrid = document.getElementById("stabUpgradesGrid");
+      sparkGrid.innerHTML = "";
+      stabGrid.innerHTML = "";
+
+      sparkUpgrades.forEach(upg => {
+        const btn = document.createElement("button");
+        btn.className = "upgrade-icon-btn";
+        btn.id = "upgBtn_sparks_" + upg.id;
+        btn.textContent = upg.icon;
+        btn.dataset.type = "sparks";
+        btn.dataset.id = upg.id;
+        sparkGrid.appendChild(btn);
+      });
+
+      stabUpgrades.forEach(upg => {
+        const btn = document.createElement("button");
+        btn.className = "upgrade-icon-btn";
+        btn.id = "upgBtn_stab_" + upg.id;
+        btn.textContent = upg.icon;
+        btn.dataset.type = "stabilizers";
+        btn.dataset.id = upg.id;
+        stabGrid.appendChild(btn);
       });
     }
 
@@ -596,27 +817,19 @@
         }
       });
 
-      // Count how many generator types are actually used
+      // Count how many generator types are active
       let activeGenTypes = 0;
       generators.forEach((_, index) => {
         if (state.genCounts[index] > 0) activeGenTypes += 1;
       });
 
       const panelStabilize = document.getElementById("panelStabilize");
-      const panelUpgrades = document.getElementById("panelUpgrades");
 
-      // Unlock prestige after you are actually using at least 4 generator types,
-      // or as a fallback once the run is huge
       const canSeePrestige =
-        activeGenTypes >= 4 || state.totalSparksThisRun >= 50000 || state.stabilizers > 0;
+        activeGenTypes >= 3 || state.totalSparksThisRun >= 4000 || state.stabilizers > 0;
 
       if (canSeePrestige) {
         panelStabilize.classList.remove("hidden");
-      }
-
-      // Upgrades visible once you ever have Stabilizers
-      if (state.stabilizers > 0) {
-        panelUpgrades.classList.remove("hidden");
       }
     }
 
@@ -627,6 +840,139 @@
       } else {
         element.classList.remove("affordable");
       }
+    }
+
+    // ---------- UPGRADES LOGIC ----------
+
+    function getUpgradeDef(type, id) {
+      if (type === "sparks") {
+        return sparkUpgrades.find(u => u.id === id) || null;
+      }
+      if (type === "stabilizers") {
+        return stabUpgrades.find(u => u.id === id) || null;
+      }
+      return null;
+    }
+
+    function canAffordUpgrade(upg) {
+      if (upg.currency === "sparks") return state.sparks >= upg.cost;
+      if (upg.currency === "stabilizers") return state.stabilizers >= upg.cost;
+      return false;
+    }
+
+    function buyUpgrade(type, id) {
+      if (isUpgradePurchased(type, id)) return;
+      const upg = getUpgradeDef(type, id);
+      if (!upg) return;
+      if (!canAffordUpgrade(upg)) return;
+
+      if (upg.currency === "sparks") state.sparks -= upg.cost;
+      if (upg.currency === "stabilizers") state.stabilizers -= upg.cost;
+
+      state.upgrades[type][id] = true;
+
+      // Apply immediate effects
+      if (upg.type === "global_mult") {
+        state.sparkMultiplier *= upg.value;
+      }
+
+      saveGame();
+    }
+
+    function updateUpgradeButtonsUI() {
+      // Spark upgrades
+      sparkUpgrades.forEach(upg => {
+        const btn = document.getElementById("upgBtn_sparks_" + upg.id);
+        if (!btn) return;
+
+        const purchased = isUpgradePurchased("sparks", upg.id);
+        const affordable = canAffordUpgrade(upg);
+
+        btn.classList.remove("purchased", "locked", "affordable");
+        if (purchased) {
+          btn.classList.add("purchased");
+          btn.disabled = true;
+        } else {
+          btn.disabled = false;
+          if (affordable) {
+            btn.classList.add("affordable");
+          }
+        }
+      });
+
+      // Stabilizer upgrades
+      stabUpgrades.forEach(upg => {
+        const btn = document.getElementById("upgBtn_stab_" + upg.id);
+        if (!btn) return;
+
+        const purchased = isUpgradePurchased("stabilizers", upg.id);
+        const affordable = canAffordUpgrade(upg);
+
+        btn.classList.remove("purchased", "locked", "affordable");
+        if (purchased) {
+          btn.classList.add("purchased");
+          btn.disabled = true;
+        } else {
+          btn.disabled = false;
+          if (affordable) {
+            btn.classList.add("affordable");
+          }
+        }
+      });
+    }
+
+    function describeCurrentEffect(upg) {
+      if (upg.type === "global_dep_boost" && isUpgradePurchased("sparks", upg.id)) {
+        const extra = 1 + Math.log10(1 + state.sparks) / 4;
+        return "Current effect: global Spark production x" + extra.toFixed(2) + " based on unspent Sparks.";
+      }
+      if (upg.type === "mult_gen_rate" && isUpgradePurchased("sparks", upg.id)) {
+        return "Current effect: Ember Conduits production x2.00.";
+      }
+      if (upg.type === "reduce_cost_growth" && isUpgradePurchased("sparks", upg.id)) {
+        return "Current effect: Ember Conduit cost scaling reduced.";
+      }
+      if (upg.type === "global_mult" && isUpgradePurchased("stabilizers", upg.id)) {
+        return "Current effect: Spark production permanently multiplied by " + upg.value.toFixed(2) + ".";
+      }
+      if (upg.type === "global_dep_boost") {
+        const extra = 1 + Math.log10(1 + state.sparks) / 4;
+        return "If purchased now: global Spark production would be x" + extra.toFixed(2) + ".";
+      }
+      return "";
+    }
+
+    function updateUpgradeDetails() {
+      const titleEl = document.getElementById("upgradeDetailsTitle");
+      const flavorEl = document.getElementById("upgradeDetailsFlavor");
+      const effectEl = document.getElementById("upgradeDetailsEffect");
+      const costEl = document.getElementById("upgradeDetailsCost");
+      const currentEl = document.getElementById("upgradeDetailsCurrent");
+
+      if (!selectedUpgrade) {
+        titleEl.textContent = "Hover or tap an upgrade icon.";
+        flavorEl.textContent = "";
+        effectEl.textContent = "";
+        costEl.textContent = "";
+        currentEl.textContent = "";
+        return;
+      }
+
+      const { type, def } = selectedUpgrade;
+      const purchased = isUpgradePurchased(type, def.id);
+      const affordable = canAffordUpgrade(def);
+
+      titleEl.textContent = def.name + (purchased ? " (purchased)" : "");
+      flavorEl.textContent = def.flavor;
+      effectEl.textContent = "Effect: " + def.effectText;
+
+      const costText =
+        def.currency === "sparks"
+          ? formatNumber(def.cost) + " Sparks"
+          : formatNumber(def.cost) + " Stabilizers";
+
+      costEl.textContent = "Cost: " + costText + (affordable && !purchased ? " - affordable now." : "");
+      currentEl.textContent = describeCurrentEffect(def);
     }
 
     // ---------- UI UPDATE ----------
@@ -665,10 +1011,8 @@
       stabilizeBtn.disabled = !canStabilizeNow;
 
       // Upgrades
-      document.getElementById("sparkMultText").textContent = state.sparkMultiplier.toFixed(2);
-      const buySparkMultBtn = document.getElementById("buySparkMultBtn");
-      const canBuyMult = state.stabilizers >= 1;
-      toggleAffordable(buySparkMultBtn, canBuyMult);
+      updateUpgradeButtonsUI();
+      updateUpgradeDetails();
 
       updateVisibility();
     }
@@ -690,14 +1034,18 @@
         state.stabilizers = data.stabilizers ?? 0;
         state.sparkMultiplier = data.sparkMultiplier ?? 1;
         state.totalSparksThisRun = data.totalSparksThisRun ?? 0;
+
         if (Array.isArray(data.genCounts)) {
           state.genCounts = data.genCounts.slice(0, generators.length);
-          while (state.genCounts.length < generators.length) {
-            state.genCounts.push(0);
-          }
+          while (state.genCounts.length < generators.length) state.genCounts.push(0);
         } else {
           state.genCounts = new Array(generators.length).fill(0);
         }
+
+        state.upgrades = data.upgrades || { sparks: {}, stabilizers: {} };
+        if (!state.upgrades.sparks) state.upgrades.sparks = {};
+        if (!state.upgrades.stabilizers) state.upgrades.stabilizers = {};
+
         return true;
       } catch (e) {
         console.error("Save load failed", e);
@@ -705,10 +1053,9 @@
       }
     }
 
-    // ---------- BUTTONS & INTRO ----------
+    // ---------- BUTTONS, NAV, INTRO ----------
 
-    function setupButtons() {
-      // Generator buy buttons
+    function setupGeneratorButtons() {
       generators.forEach((gen, index) => {
         const btn = document.getElementById("genBuy_" + gen.id);
         if (!btn) return;
@@ -722,29 +1069,59 @@
           }
         };
       });
+    }
 
-      const stabilizeBtn = document.getElementById("stabilizeBtn");
-      stabilizeBtn.onclick = () => {
-        stabilize();
-        updateUI();
-      };
+    function setupUpgradeButtons() {
+      const allBtns = document.querySelectorAll(".upgrade-icon-btn");
+      allBtns.forEach(btn => {
+        btn.addEventListener("mouseenter", () => {
+          const type = btn.dataset.type === "sparks" ? "sparks" : "stabilizers";
+          const id = btn.dataset.id;
+          const def = getUpgradeDef(type, id);
+          if (!def) return;
+          selectedUpgrade = { type, def };
+          updateUpgradeDetails();
+        });
 
-      const multBtn = document.getElementById("buySparkMultBtn");
-      multBtn.onclick = () => {
-        if (state.stabilizers >= 1) {
-          state.stabilizers -= 1;
-          state.sparkMultiplier *= 1.2;
+        btn.addEventListener("click", () => {
+          const type = btn.dataset.type === "sparks" ? "sparks" : "stabilizers";
+          const id = btn.dataset.id;
+          const def = getUpgradeDef(type, id);
+          if (!def) return;
+
+          selectedUpgrade = { type, def };
+          buyUpgrade(type, id);
           updateUI();
-          saveGame();
-        }
-      };
+        });
+      });
+    }
 
-      const introBtn = document.getElementById("introConfirmBtn");
-      introBtn.onclick = () => {
-        const overlay = document.getElementById("introOverlay");
-        overlay.classList.add("hidden");
-        localStorage.setItem(INTRO_KEY, "1");
-      };
+    function setupNav() {
+      const navButtons = document.querySelectorAll(".nav-btn");
+      navButtons.forEach(btn => {
+        btn.onclick = () => {
+          const tab = btn.dataset.tab;
+          showTab(tab);
+        };
+      });
+    }
+
+    function showTab(tab) {
+      const sparksTab = document.getElementById("tabSparks");
+      const upgradesTab = document.getElementById("tabUpgrades");
+
+      if (tab === "sparks") {
+        sparksTab.classList.remove("hidden");
+        upgradesTab.classList.add("hidden");
+      } else {
+        sparksTab.classList.add("hidden");
+        upgradesTab.classList.remove("hidden");
+      }
+
+      const navButtons = document.querySelectorAll(".nav-btn");
+      navButtons.forEach(btn => {
+        btn.classList.toggle("active", btn.dataset.tab === tab);
+      });
     }
 
     function setupIntroOverlay() {
@@ -755,6 +1132,11 @@
       } else {
         overlay.classList.add("hidden");
       }
+      const introBtn = document.getElementById("introConfirmBtn");
+      introBtn.onclick = () => {
+        overlay.classList.add("hidden");
+        localStorage.setItem(INTRO_KEY, "1");
+      };
     }
 
     // ---------- MAIN LOOP ----------
@@ -778,16 +1160,25 @@
     // ---------- INIT ----------
 
     buildGeneratorUI();
+    buildUpgradesUI();
     const hadSave = loadGame();
     if (!hadSave) {
-      // Give a tiny starting buffer so you can buy the first generator without clicking
-      state.sparks = 10;
+      // Slight kickstart so first Conduit is instant
+      state.sparks = 25;
       state.totalSparksThisRun = 0;
+      state.upgrades = { sparks: {}, stabilizers: {} };
     }
-    setupButtons();
+
+    setupGeneratorButtons();
+    setupUpgradesUIAfterBuild();
     setupIntroOverlay();
+    setupNav();
     updateUI();
     requestAnimationFrame(gameLoop);
+
+    function setupUpgradesUIAfterBuild() {
+      setupUpgradeButtons();
+    }
   </script>
 </body>
 </html>
