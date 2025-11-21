@@ -2,128 +2,381 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Fractured Engine - Prototype</title>
+  <title>Fractured Engine</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
-      background: #050509;
+      background: radial-gradient(circle at top, #17172b 0%, #050509 55%, #020208 100%);
       color: #f5f5f5;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: flex-start;
+    }
+
+    /* Resource bar at top */
+    #resourceBar {
+      width: 100%;
+      padding: 8px 16px;
+      background: rgba(5, 5, 15, 0.9);
+      border-bottom: 1px solid #222233;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      font-size: 14px;
+    }
+
+    .res-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .res-icon {
+      font-size: 18px;
+      opacity: 0.9;
+    }
+
+    .res-value {
+      font-variant-numeric: tabular-nums;
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .res-label {
+      font-size: 11px;
+      opacity: 0.7;
+    }
+
+    /* Main centered content */
+    #gameRoot {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       padding: 16px;
     }
 
-    h1, h2 {
-      margin: 0 0 8px 0;
+    #gameInner {
+      max-width: 720px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 18px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 4px 0 2px 0;
+      opacity: 0.92;
+    }
+
+    #subtitle {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .panel {
+      border-radius: 8px;
+      border: 1px solid rgba(60, 60, 90, 0.8);
+      background: radial-gradient(circle at top, #171727 0%, #050510 60%);
+      padding: 10px 12px;
+      width: 100%;
+      max-width: 480px;
+      text-align: left;
+      box-shadow: 0 0 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.85;
+    }
+
+    .panel-title span.icon {
+      font-size: 16px;
+      margin-right: 4px;
+    }
+
+    .panel-flavor {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-bottom: 8px;
     }
 
     .row {
-      margin-bottom: 12px;
+      margin-bottom: 6px;
+      font-size: 12px;
     }
 
-    .resource {
-      font-size: 18px;
-      margin-bottom: 4px;
+    .small {
+      font-size: 11px;
+      opacity: 0.78;
     }
 
     button {
       padding: 6px 10px;
       margin: 4px 4px 0 0;
       background: #181825;
-      border: 1px solid #444;
+      border: 1px solid #444466;
       color: #f5f5f5;
       border-radius: 4px;
       cursor: pointer;
-      font-size: 14px;
+      font-size: 12px;
+      transition: transform 0.05s ease-out, box-shadow 0.15s ease-out, border-color 0.15s ease-out;
+    }
+
+    button:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 0 8px rgba(90, 130, 255, 0.4);
     }
 
     button:disabled {
       opacity: 0.4;
       cursor: default;
+      box-shadow: none;
     }
 
-    .small {
+    .affordable {
+      border-color: #91a5ff;
+      box-shadow: 0 0 10px rgba(120, 160, 255, 0.65);
+    }
+
+    .inline-stat {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Intro overlay */
+    #introOverlay {
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(40, 50, 120, 0.7) 0%, rgba(0, 0, 10, 0.95) 55%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #introModal {
+      width: 90%;
+      max-width: 480px;
+      background: #050510;
+      border-radius: 10px;
+      border: 1px solid #444466;
+      padding: 16px 18px;
+      box-shadow: 0 0 20px rgba(10, 10, 40, 0.95);
+      text-align: left;
+    }
+
+    #introTitle {
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 6px;
+    }
+
+    #introBody {
       font-size: 12px;
-      opacity: 0.8;
+      line-height: 1.5;
+      opacity: 0.9;
+      margin-bottom: 10px;
     }
 
-    .panel {
-      border: 1px solid #222;
-      padding: 10px;
-      margin-bottom: 12px;
-      border-radius: 6px;
-      background: #0b0b12;
+    #introHint {
+      font-size: 11px;
+      opacity: 0.7;
+      margin-bottom: 10px;
+    }
+
+    #introModal button {
+      width: 100%;
+      margin-top: 4px;
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 600px) {
+      #gameInner {
+        max-width: 100%;
+      }
+
+      .panel {
+        max-width: 100%;
+      }
+
+      #resourceBar {
+        font-size: 12px;
+        gap: 10px;
+      }
+
+      .res-value {
+        min-width: 60px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Fractured Engine - Prototype</h1>
-
-  <div class="panel">
-    <div class="resource">
-      ● Fragments: <span id="fragments">0</span>
-    </div>
-    <div class="resource">
-      ◆ Nodes: <span id="nodes">0</span>
-    </div>
-    <div class="resource">
-      ⌘ Stabilizers: <span id="stabilizers">0</span>
-    </div>
-    <div class="small">
-      Fragment gain per second: <span id="fps">0</span>
+  <!-- Intro overlay (first time only) -->
+  <div id="introOverlay" class="hidden">
+    <div id="introModal">
+      <div id="introTitle">Fractured Engine</div>
+      <div id="introBody">
+        The core that once held reality together has shattered.
+        What remains is a quiet lattice of fading sparks and drifting code.
+        Your task is simple: coax a new engine into existence, one spark at a time,
+        until the laws that bind this place answer to you again.
+      </div>
+      <div id="introHint">
+        Click to gather Sparks, assemble Nodes, then stabilize the flow.
+        New systems will reveal themselves as the engine remembers how to run.
+      </div>
+      <button id="introConfirmBtn">Begin reassembly</button>
     </div>
   </div>
 
-  <div class="panel">
-    <h2>Core Actions</h2>
-    <button id="gainFragmentBtn">Click: gain 1 Fragment</button>
+  <!-- Resource bar -->
+  <div id="resourceBar">
+    <div class="res-item">
+      <span class="res-icon">●</span>
+      <span class="res-value inline-stat" id="sparksDisplay">0</span>
+      <span class="res-label">Sparks</span>
+    </div>
+    <div class="res-item">
+      <span class="res-icon">◆</span>
+      <span class="res-value inline-stat" id="nodesDisplay">0</span>
+      <span class="res-label">Nodes</span>
+    </div>
+    <div class="res-item">
+      <span class="res-icon">⌘</span>
+      <span class="res-value inline-stat" id="stabilizersDisplay">0</span>
+      <span class="res-label">Stabilizers</span>
+    </div>
+    <div class="res-item">
+      <span class="res-icon">✶</span>
+      <span class="res-value inline-stat" id="spsDisplay">0</span>
+      <span class="res-label">Sparks per second</span>
+    </div>
   </div>
 
-  <div class="panel">
-    <h2>Nodes</h2>
-    <div class="small">
-      Each Node generates 0.5 Fragments per second.
-    </div>
-    <div class="row small">
-      Cost: <span id="nodeCost">10</span> Fragments
-    </div>
-    <button id="buyNodeBtn">Buy Node</button>
-  </div>
+  <!-- Main content -->
+  <div id="gameRoot">
+    <div id="gameInner">
+      <div>
+        <h1>Fractured Engine</h1>
+        <div id="subtitle">Prototype build - coax the core back to life</div>
+      </div>
 
-  <div class="panel">
-    <h2>Prestige - Stabilize</h2>
-    <div class="small">
-      Reset Fragments and Nodes for Stabilizers.<br>
-      Gain based on your total Fragments this run.
-    </div>
-    <div class="row small">
-      On stabilize you would gain:
-      <span id="stabilizeGainPreview">0</span> Stabilizers
-    </div>
-    <button id="stabilizeBtn">Stabilize</button>
-  </div>
+      <!-- Core actions panel -->
+      <div class="panel" id="panelCore">
+        <div class="panel-title">
+          <span><span class="icon">●</span> Core Channel</span>
+        </div>
+        <div class="panel-flavor">
+          The first flickers of a new engine. Crude, manual, but alive.
+        </div>
+        <div class="row small">
+          Each tap drags a single Spark out of the static and into your control.
+        </div>
+        <button id="gainSparkBtn">Channel Spark (gain 1 Spark)</button>
+      </div>
 
-  <div class="panel">
-    <h2>Upgrades (Stabilizers)</h2>
-    <div class="row small">
-      Fragment multiplier: x<span id="fragMultDisplay">1</span>
+      <!-- Nodes panel (unlocked with a few Sparks) -->
+      <div class="panel hidden" id="panelNodes">
+        <div class="panel-title">
+          <span><span class="icon">◆</span> Lattice Nodes</span>
+        </div>
+        <div class="panel-flavor">
+          Simple anchor points that keep Sparks from drifting back into the void.
+        </div>
+        <div class="row small">
+          Each Node generates <span class="inline-stat" id="nodeBaseRateText">0.5</span> Sparks per second,
+          scaled by engine stability.
+        </div>
+        <div class="row small">
+          Current cost: <span id="nodeCostText" class="inline-stat">10</span> Sparks
+        </div>
+        <div class="row small">
+          You own <span id="nodeCountText" class="inline-stat">0</span> Nodes.
+        </div>
+        <button id="buyNodeBtn">Assemble Node</button>
+      </div>
+
+      <!-- Stabilize panel (prestige) -->
+      <div class="panel hidden" id="panelStabilize">
+        <div class="panel-title">
+          <span><span class="icon">⌘</span> Stabilization Cycle</span>
+        </div>
+        <div class="panel-flavor">
+          Collapse the current attempt into a cleaner pattern and keep what the engine learned.
+        </div>
+        <div class="row small">
+          Reset Sparks and Nodes to gain Stabilizers based on total Sparks this cycle.
+        </div>
+        <div class="row small">
+          Potential yield: <span id="stabilizePreview" class="inline-stat">0</span> Stabilizers
+          (current run total <span id="runTotalSparks" class="inline-stat">0</span> Sparks)
+        </div>
+        <button id="stabilizeBtn">Stabilize Flow</button>
+      </div>
+
+      <!-- Upgrades panel (Stabilizer upgrades) -->
+      <div class="panel hidden" id="panelUpgrades">
+        <div class="panel-title">
+          <span><span class="icon">✦</span> Engine Tuning</span>
+        </div>
+        <div class="panel-flavor">
+          Tiny changes in how Sparks resonate can echo through the entire lattice.
+        </div>
+        <div class="row small">
+          Global Spark multiplier: x<span id="sparkMultText" class="inline-stat">1</span>
+        </div>
+        <div class="row small">
+          Upgrade: <strong>Resonant Coils</strong><br>
+          <span class="small">
+            Spend 1 Stabilizer to increase Spark gain by x1.2.
+            The coils hum louder with each adjustment.
+          </span>
+        </div>
+        <button id="buySparkMultBtn">
+          Tune Resonant Coils (cost 1 Stabilizer)
+        </button>
+      </div>
     </div>
-    <button id="buyFragMultBtn">
-      Spend 1 Stabilizer to increase Fragment multiplier by x1.2
-    </button>
   </div>
 
   <script>
     const state = {
-      fragments: 0,
+      sparks: 0,
       nodes: 0,
       stabilizers: 0,
-      fragmentMultiplier: 1,
+      sparkMultiplier: 1,
       nodeBaseCost: 10,
       nodeCostGrowth: 1.15,
-      totalFragmentsThisRun: 0
+      nodeBaseRate: 0.5,
+      totalSparksThisRun: 0
     };
 
-    function format(x) {
+    function formatNumber(x) {
       if (x >= 1e9) return x.toExponential(2);
       if (x >= 1e6) return (x / 1e6).toFixed(2) + "M";
       if (x >= 1e3) return (x / 1e3).toFixed(2) + "K";
@@ -134,43 +387,34 @@
       return state.nodeBaseCost * Math.pow(state.nodeCostGrowth, state.nodes);
     }
 
+    function sparksPerSecond() {
+      return state.nodes * state.nodeBaseRate * state.sparkMultiplier;
+    }
+
     function stabilizerGain() {
-      const base = Math.pow(state.totalFragmentsThisRun, 0.6) / 100;
+      const base = Math.pow(state.totalSparksThisRun, 0.6) / 100;
       return Math.floor(base);
     }
 
-    function updateUI() {
-      document.getElementById("fragments").textContent = format(state.fragments);
-      document.getElementById("nodes").textContent = state.nodes.toString();
-      document.getElementById("stabilizers").textContent = state.stabilizers.toString();
-      document.getElementById("nodeCost").textContent = format(nodeCost());
-
-      const fps = state.nodes * 0.5 * state.fragmentMultiplier;
-      document.getElementById("fps").textContent = format(fps);
-
-      document.getElementById("stabilizeGainPreview").textContent = stabilizerGain().toString();
-      document.getElementById("fragMultDisplay").textContent = state.fragmentMultiplier.toFixed(2);
-    }
-
-    function gainFragments(amount) {
-      state.fragments += amount;
-      state.totalFragmentsThisRun += amount;
+    function gainSparks(amount) {
+      state.sparks += amount;
+      state.totalSparksThisRun += amount;
     }
 
     function tick(dt) {
-      const fps = state.nodes * 0.5 * state.fragmentMultiplier;
-      gainFragments(fps * dt);
+      const sps = sparksPerSecond();
+      gainSparks(sps * dt);
     }
 
-    function hardResetRun(keepStabilizers = true) {
-      const keepStab = keepStabilizers ? state.stabilizers : 0;
-      const keepMult = keepStabilizers ? state.fragmentMultiplier : 1;
+    function hardResetRun(keepMeta = true) {
+      const keepStabs = keepMeta ? state.stabilizers : 0;
+      const keepMult = keepMeta ? state.sparkMultiplier : 1;
 
-      state.fragments = 0;
+      state.sparks = 0;
       state.nodes = 0;
-      state.totalFragmentsThisRun = 0;
-      state.stabilizers = keepStab;
-      state.fragmentMultiplier = keepMult;
+      state.totalSparksThisRun = 0;
+      state.stabilizers = keepStabs;
+      state.sparkMultiplier = keepMult;
     }
 
     function stabilize() {
@@ -181,13 +425,81 @@
       saveGame();
     }
 
+    function updateVisibility() {
+      const panelNodes = document.getElementById("panelNodes");
+      const panelStabilize = document.getElementById("panelStabilize");
+      const panelUpgrades = document.getElementById("panelUpgrades");
+
+      // Show Nodes once you have a few Sparks or at least one Node
+      if (state.sparks >= 5 || state.nodes > 0) {
+        panelNodes.classList.remove("hidden");
+      }
+
+      // Show Stabilize once total Sparks this run is decently high
+      if (state.totalSparksThisRun >= 100 || state.stabilizers > 0) {
+        panelStabilize.classList.remove("hidden");
+      }
+
+      // Show Upgrades once you have any Stabilizers
+      if (state.stabilizers > 0) {
+        panelUpgrades.classList.remove("hidden");
+      }
+    }
+
+    function updateUI() {
+      // Resources
+      document.getElementById("sparksDisplay").textContent = formatNumber(state.sparks);
+      document.getElementById("nodesDisplay").textContent = state.nodes.toString();
+      document.getElementById("stabilizersDisplay").textContent = state.stabilizers.toString();
+      document.getElementById("spsDisplay").textContent = formatNumber(sparksPerSecond());
+
+      // Nodes panel
+      document.getElementById("nodeBaseRateText").textContent = state.nodeBaseRate.toFixed(2);
+      document.getElementById("nodeCostText").textContent = formatNumber(nodeCost());
+      document.getElementById("nodeCountText").textContent = state.nodes.toString();
+
+      // Stabilize panel
+      document.getElementById("stabilizePreview").textContent = stabilizerGain().toString();
+      document.getElementById("runTotalSparks").textContent = formatNumber(state.totalSparksThisRun);
+
+      // Upgrades panel
+      document.getElementById("sparkMultText").textContent = state.sparkMultiplier.toFixed(2);
+
+      // Affordable highlighting
+      const buyNodeBtn = document.getElementById("buyNodeBtn");
+      const buySparkMultBtn = document.getElementById("buySparkMultBtn");
+      const stabilizeBtn = document.getElementById("stabilizeBtn");
+
+      const canAffordNode = state.sparks >= nodeCost();
+      const canAffordSparkMult = state.stabilizers >= 1;
+      const canStabilize = stabilizerGain() > 0;
+
+      toggleAffordable(buyNodeBtn, canAffordNode);
+      toggleAffordable(buySparkMultBtn, canAffordSparkMult);
+      toggleAffordable(stabilizeBtn, canStabilize);
+
+      // Disable buttons if literally useless
+      stabilizeBtn.disabled = !canStabilize;
+
+      updateVisibility();
+    }
+
+    function toggleAffordable(element, canAfford) {
+      if (!element) return;
+      if (canAfford) {
+        element.classList.add("affordable");
+      } else {
+        element.classList.remove("affordable");
+      }
+    }
+
     function saveGame() {
       const saveData = JSON.stringify(state);
-      localStorage.setItem("fracturedEngineSave", saveData);
+      localStorage.setItem("fracturedEngineSave_v1", saveData);
     }
 
     function loadGame() {
-      const raw = localStorage.getItem("fracturedEngineSave");
+      const raw = localStorage.getItem("fracturedEngineSave_v1");
       if (!raw) return;
       try {
         const data = JSON.parse(raw);
@@ -198,15 +510,15 @@
     }
 
     function setupButtons() {
-      document.getElementById("gainFragmentBtn").onclick = () => {
-        gainFragments(1 * state.fragmentMultiplier);
+      document.getElementById("gainSparkBtn").onclick = () => {
+        gainSparks(1 * state.sparkMultiplier);
         updateUI();
       };
 
       document.getElementById("buyNodeBtn").onclick = () => {
         const cost = nodeCost();
-        if (state.fragments >= cost) {
-          state.fragments -= cost;
+        if (state.sparks >= cost) {
+          state.sparks -= cost;
           state.nodes += 1;
           updateUI();
         }
@@ -217,18 +529,35 @@
         updateUI();
       };
 
-      document.getElementById("buyFragMultBtn").onclick = () => {
+      document.getElementById("buySparkMultBtn").onclick = () => {
         if (state.stabilizers >= 1) {
           state.stabilizers -= 1;
-          state.fragmentMultiplier *= 1.2;
+          state.sparkMultiplier *= 1.2;
           updateUI();
           saveGame();
         }
       };
+
+      const introBtn = document.getElementById("introConfirmBtn");
+      introBtn.onclick = () => {
+        const overlay = document.getElementById("introOverlay");
+        overlay.classList.add("hidden");
+        localStorage.setItem("fracturedEngineIntroSeen", "1");
+      };
     }
 
-    // Main loop
+    function setupIntroOverlay() {
+      const seen = localStorage.getItem("fracturedEngineIntroSeen");
+      const overlay = document.getElementById("introOverlay");
+      if (!seen) {
+        overlay.classList.remove("hidden");
+      } else {
+        overlay.classList.add("hidden");
+      }
+    }
+
     let lastTime = performance.now();
+
     function gameLoop(now) {
       const dt = (now - lastTime) / 1000;
       lastTime = now;
@@ -246,6 +575,7 @@
     // Init
     loadGame();
     setupButtons();
+    setupIntroOverlay();
     updateUI();
     requestAnimationFrame(gameLoop);
   </script>
