@@ -359,6 +359,32 @@
       margin-bottom: 2px;
     }
 
+    /* Settings */
+    .settings-row {
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .settings-row label {
+      cursor: pointer;
+    }
+
+    #notationSelect {
+      background: #151524;
+      border: 1px solid #3b3b55;
+      color: #f5f5f5;
+      border-radius: 4px;
+      padding: 3px 6px;
+      font-size: 12px;
+    }
+
+    .settings-buttons {
+      margin-top: 6px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
     @media (max-width: 600px) {
       #gameInner {
         max-width: 100%;
@@ -451,7 +477,7 @@
               Collapse this run into a cleaner pattern and store what the engine learned as Stabilizers.
             </div>
             <div class="row small">
-              Resets Sparks and Spark-layer upgrades, but you keep Stabilizers and higher tuning.
+              Resets Sparks, generators, and Spark-layer upgrades. Stabilizer upgrades persist.
             </div>
             <div class="row small">
               Raw progress toward next Stabilizer:
@@ -482,7 +508,7 @@
           <div class="upgrade-section">
             <div class="upgrade-section-title">Spark Upgrades</div>
             <div class="row small">
-              Purchased Spark upgrades are lost when you stabilize.
+              Purchased Spark upgrades are lost when you stabilize, unless you unlock persistence.
             </div>
             <div class="upgrade-grid" id="sparkUpgradesGrid"></div>
           </div>
@@ -507,10 +533,44 @@
         </div>
       </div>
 
+      <!-- Settings tab content -->
+      <div id="tabSettings" class="hidden">
+        <div class="panel" id="panelSettings">
+          <div class="panel-title">
+            <span><span class="icon">☰</span> Settings</span>
+          </div>
+          <div class="panel-flavor small">
+            Adjust how the engine presents itself. Changes are stored in your local save.
+          </div>
+
+          <div class="settings-row">
+            <label>
+              <input type="checkbox" id="setting_autosave">
+              Enable autosave (periodically saves in the background)
+            </label>
+          </div>
+
+          <div class="settings-row">
+            <span class="small">Number notation:</span><br>
+            <select id="notationSelect">
+              <option value="short">Short (1.23K)</option>
+              <option value="scientific">Scientific (1.23e3)</option>
+            </select>
+          </div>
+
+          <div class="settings-buttons">
+            <button id="btnSaveNow">Save now</button>
+            <button id="btnShowIntro">Show intro again next load</button>
+            <button id="btnFullReset">Reset all progress</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Nav bar -->
       <div id="navBar">
         <button class="nav-btn active" data-tab="sparks">Sparks</button>
         <button class="nav-btn" data-tab="upgrades">Upgrades</button>
+        <button class="nav-btn" data-tab="settings">Settings</button>
       </div>
     </div>
   </div>
@@ -518,7 +578,7 @@
   <script>
     // ---------- CONFIG ----------
 
-    const SAVE_KEY = "fracturedEngineSave_v3";
+    const SAVE_KEY = "fracturedEngineSave_v4";
     const INTRO_KEY = "fracturedEngineIntroSeen";
 
     const generators = [
@@ -579,6 +639,7 @@
       }
     ];
 
+    // Spark upgrades (reset on stabilize unless persistence unlocked)
     const sparkUpgrades = [
       {
         id: "u_spark_conduit_double",
@@ -613,9 +674,44 @@
         flavor: "Each idle Spark hums softly, adding to the background rhythm.",
         effectText: "Boosts all Spark production based on unspent Sparks.",
         type: "global_dep_boost"
+      },
+      {
+        id: "u_spark_relay_double",
+        name: "Relay Overclock",
+        icon: "▹",
+        currency: "sparks",
+        cost: 900,
+        flavor: "The relays twitch faster than the eye can track.",
+        effectText: "Doubles the production of Pulse Relays.",
+        type: "mult_gen_rate",
+        targetGenIndex: 1,
+        value: 2
+      },
+      {
+        id: "u_spark_weaver_double",
+        name: "Weaver Synchrony",
+        icon: "✹",
+        currency: "sparks",
+        cost: 2200,
+        flavor: "Weavers align their loops so no energy slips through the gaps.",
+        effectText: "Doubles the production of Flux Weavers.",
+        type: "mult_gen_rate",
+        targetGenIndex: 2,
+        value: 2
+      },
+      {
+        id: "u_spark_lattice_focus",
+        name: "Lattice Focus",
+        icon: "◇",
+        currency: "sparks",
+        cost: 6000,
+        flavor: "Tightens every joint in the lattice, pushing more power through each link.",
+        effectText: "Boosts all generator output based on the number of different generator types you own.",
+        type: "global_type_boost"
       }
     ];
 
+    // Stabilizer upgrades (permanent)
     const stabUpgrades = [
       {
         id: "u_stab_resonant_coils",
@@ -627,6 +723,27 @@
         effectText: "Increases all Spark production by x1.5 permanently.",
         type: "global_mult",
         value: 1.5
+      },
+      {
+        id: "u_stab_deep_memory",
+        name: "Deep Memory",
+        icon: "⌘",
+        currency: "stabilizers",
+        cost: 3,
+        flavor: "Etch each run deeper into the engine's memory banks.",
+        effectText: "Increases Stabilizer gain from each run.",
+        type: "prestige_gain_mult",
+        value: 1.5
+      },
+      {
+        id: "u_stab_persistent_lattice",
+        name: "Persistent Lattice",
+        icon: "▣",
+        currency: "stabilizers",
+        cost: 5,
+        flavor: "Lock the lattice pattern so its clever tricks survive collapse.",
+        effectText: "Spark upgrades are no longer reset when you stabilize.",
+        type: "keep_spark_upgrades"
       }
     ];
 
@@ -635,12 +752,17 @@
     const state = {
       sparks: 0,
       stabilizers: 0,
-      sparkMultiplier: 1,
+      sparkMultiplier: 1,          // from stabilizer global_mult upgrades
+      stabilizerGainMult: 1,       // from Deep Memory
       totalSparksThisRun: 0,
       genCounts: new Array(generators.length).fill(0),
       upgrades: {
         sparks: {},
         stabilizers: {}
+      },
+      settings: {
+        autosave: true,
+        notation: "short"
       }
     };
 
@@ -649,6 +771,11 @@
     // ---------- UTILS ----------
 
     function formatNumber(x) {
+      const notation = state.settings?.notation || "short";
+      if (notation === "scientific" && x >= 1000) {
+        return x.toExponential(2);
+      }
+      // short notation
       if (x >= 1e9) return x.toExponential(2);
       if (x >= 1e6) return (x / 1e6).toFixed(2) + "M";
       if (x >= 1e3) return (x / 1e3).toFixed(2) + "K";
@@ -680,21 +807,42 @@
       return gen.baseCost * Math.pow(growth, state.genCounts[index]);
     }
 
-    function conduitRateMultiplier(index) {
+    function generatorRateMultiplier(index) {
       let mult = 1;
+
+      // Per-generator doubles
       if (isUpgradePurchased("sparks", "u_spark_conduit_double") && index === 0) {
         mult *= 2;
       }
+      if (isUpgradePurchased("sparks", "u_spark_relay_double") && index === 1) {
+        mult *= 2;
+      }
+      if (isUpgradePurchased("sparks", "u_spark_weaver_double") && index === 2) {
+        mult *= 2;
+      }
+
+      // Dependent global boost based on unspent Sparks
       if (isUpgradePurchased("sparks", "u_spark_echoes")) {
         const extra = 1 + Math.log10(1 + state.sparks) / 4;
         mult *= extra;
       }
+
+      // Global type-based boost
+      if (isUpgradePurchased("sparks", "u_spark_lattice_focus")) {
+        let typesOwned = 0;
+        for (let i = 0; i < generators.length; i++) {
+          if (state.genCounts[i] > 0) typesOwned += 1;
+        }
+        const typeFactor = 1 + typesOwned * 0.25;
+        mult *= typeFactor;
+      }
+
       return mult;
     }
 
     function genEffectiveRate(index) {
       const base = generators[index].baseRate;
-      return base * conduitRateMultiplier(index);
+      return base * generatorRateMultiplier(index);
     }
 
     function sparksPerSecond() {
@@ -706,7 +854,9 @@
     }
 
     function stabilizerRawGain() {
-      return Math.pow(state.totalSparksThisRun, 0.6) / 80;
+      // Gentler formula, shows progress as decimal
+      const base = Math.pow(state.totalSparksThisRun, 0.6) / 50;
+      return base * state.stabilizerGainMult;
     }
 
     function stabilizerGainFloored() {
@@ -729,7 +879,11 @@
       state.sparks = 0;
       state.totalSparksThisRun = 0;
       state.genCounts = new Array(generators.length).fill(0);
-      state.upgrades.sparks = {};
+
+      // Reset Spark upgrades unless we have Persistent Lattice
+      if (!isUpgradePurchased("stabilizers", "u_stab_persistent_lattice")) {
+        state.upgrades.sparks = {};
+      }
     }
 
     function stabilize() {
@@ -807,6 +961,7 @@
     // ---------- VISIBILITY & HIGHLIGHTS ----------
 
     function updateVisibility() {
+      // Generators unlock with progress
       generators.forEach((gen, index) => {
         const row = document.getElementById("genRow_" + gen.id);
         if (!row) return;
@@ -824,7 +979,7 @@
 
       const panelStabilize = document.getElementById("panelStabilize");
       const canSeePrestige =
-        activeGenTypes >= 3 || state.totalSparksThisRun >= 4000 || state.stabilizers > 0;
+        activeGenTypes >= 2 || state.totalSparksThisRun >= 800 || state.stabilizers > 0;
 
       if (canSeePrestige) {
         panelStabilize.classList.remove("hidden");
@@ -869,8 +1024,15 @@
 
       state.upgrades[type][id] = true;
 
-      if (upg.type === "global_mult") {
-        state.sparkMultiplier *= upg.value;
+      // Apply immediate permanent effects
+      if (type === "stabilizers") {
+        if (upg.type === "global_mult") {
+          state.sparkMultiplier *= upg.value;
+        }
+        if (upg.type === "prestige_gain_mult") {
+          state.stabilizerGainMult *= upg.value;
+        }
+        // keep_spark_upgrades is handled in resetSparkLayer
       }
 
       saveGame();
@@ -917,22 +1079,42 @@
     }
 
     function describeCurrentEffect(upg) {
-      if (upg.type === "global_dep_boost" && isUpgradePurchased("sparks", upg.id)) {
+      if (upg.type === "global_dep_boost") {
         const extra = 1 + Math.log10(1 + state.sparks) / 4;
-        return "Current effect: global Spark production x" + extra.toFixed(2) + " based on unspent Sparks.";
+        if (isUpgradePurchased("sparks", upg.id)) {
+          return "Current effect: global Spark production x" + extra.toFixed(2) + " based on unspent Sparks.";
+        }
+        return "If purchased now: global Spark production would be x" + extra.toFixed(2) + " based on unspent Sparks.";
       }
       if (upg.type === "mult_gen_rate" && isUpgradePurchased("sparks", upg.id)) {
-        return "Current effect: Ember Conduits production x2.00.";
+        if (upg.targetGenIndex === 0) return "Current effect: Ember Conduits production x2.00.";
+        if (upg.targetGenIndex === 1) return "Current effect: Pulse Relays production x2.00.";
+        if (upg.targetGenIndex === 2) return "Current effect: Flux Weavers production x2.00.";
       }
       if (upg.type === "reduce_cost_growth" && isUpgradePurchased("sparks", upg.id)) {
         return "Current effect: Ember Conduit cost scaling reduced.";
       }
+      if (upg.type === "global_type_boost") {
+        let typesOwned = 0;
+        for (let i = 0; i < generators.length; i++) {
+          if (state.genCounts[i] > 0) typesOwned += 1;
+        }
+        const typeFactor = 1 + typesOwned * 0.25;
+        if (isUpgradePurchased("sparks", upg.id)) {
+          return "Current effect: all generators boosted x" + typeFactor.toFixed(2) +
+            " from " + typesOwned + " active generator types.";
+        }
+        return "If purchased now: all generators would be boosted based on how many types you own (currently " +
+          typesOwned + ").";
+      }
       if (upg.type === "global_mult" && isUpgradePurchased("stabilizers", upg.id)) {
         return "Current effect: Spark production permanently multiplied by " + upg.value.toFixed(2) + ".";
       }
-      if (upg.type === "global_dep_boost") {
-        const extra = 1 + Math.log10(1 + state.sparks) / 4;
-        return "If purchased now: global Spark production would be x" + extra.toFixed(2) + ".";
+      if (upg.type === "prestige_gain_mult" && isUpgradePurchased("stabilizers", upg.id)) {
+        return "Current effect: Stabilizer gain multiplied by " + upg.value.toFixed(2) + ".";
+      }
+      if (upg.type === "keep_spark_upgrades" && isUpgradePurchased("stabilizers", upg.id)) {
+        return "Current effect: Spark upgrades are preserved when you stabilize.";
       }
       return "";
     }
@@ -1004,6 +1186,7 @@
 
       updateUpgradeButtonsUI();
       updateUpgradeDetails();
+      updateSettingsUIFromState();
 
       updateVisibility();
     }
@@ -1024,6 +1207,7 @@
         state.sparks = data.sparks ?? 0;
         state.stabilizers = data.stabilizers ?? 0;
         state.sparkMultiplier = data.sparkMultiplier ?? 1;
+        state.stabilizerGainMult = data.stabilizerGainMult ?? 1;
         state.totalSparksThisRun = data.totalSparksThisRun ?? 0;
 
         if (Array.isArray(data.genCounts)) {
@@ -1037,11 +1221,67 @@
         if (!state.upgrades.sparks) state.upgrades.sparks = {};
         if (!state.upgrades.stabilizers) state.upgrades.stabilizers = {};
 
+        state.settings = data.settings || state.settings;
+        if (state.settings.autosave === undefined) state.settings.autosave = true;
+        if (!state.settings.notation) state.settings.notation = "short";
+
         return true;
       } catch (e) {
         console.error("Save load failed", e);
         return false;
       }
+    }
+
+    // ---------- SETTINGS UI ----------
+
+    function updateSettingsUIFromState() {
+      const autosaveCheckbox = document.getElementById("setting_autosave");
+      const notationSelect = document.getElementById("notationSelect");
+      if (autosaveCheckbox) autosaveCheckbox.checked = !!state.settings.autosave;
+      if (notationSelect) notationSelect.value = state.settings.notation || "short";
+    }
+
+    function setupSettingsControls() {
+      const autosaveCheckbox = document.getElementById("setting_autosave");
+      const notationSelect = document.getElementById("notationSelect");
+      const btnSaveNow = document.getElementById("btnSaveNow");
+      const btnShowIntro = document.getElementById("btnShowIntro");
+      const btnFullReset = document.getElementById("btnFullReset");
+
+      autosaveCheckbox.addEventListener("change", () => {
+        state.settings.autosave = autosaveCheckbox.checked;
+        saveGame();
+      });
+
+      notationSelect.addEventListener("change", () => {
+        state.settings.notation = notationSelect.value;
+        saveGame();
+        updateUI();
+      });
+
+      btnSaveNow.addEventListener("click", () => {
+        saveGame();
+        alert("Progress saved to this browser.");
+      });
+
+      btnShowIntro.addEventListener("click", () => {
+        localStorage.removeItem(INTRO_KEY);
+        alert("Intro will show again on next load.");
+      });
+
+      btnFullReset.addEventListener("click", () => {
+        const sure = confirm(
+          "This will erase all progress, upgrades, and settings for Fractured Engine in this browser. Continue?"
+        );
+        if (!sure) return;
+        fullResetProgress();
+      });
+    }
+
+    function fullResetProgress() {
+      localStorage.removeItem(SAVE_KEY);
+      localStorage.removeItem(INTRO_KEY);
+      location.reload();
     }
 
     // ---------- BUTTONS, NAV, INTRO ----------
@@ -1100,13 +1340,20 @@
     function showTab(tab) {
       const sparksTab = document.getElementById("tabSparks");
       const upgradesTab = document.getElementById("tabUpgrades");
+      const settingsTab = document.getElementById("tabSettings");
 
       if (tab === "sparks") {
         sparksTab.classList.remove("hidden");
         upgradesTab.classList.add("hidden");
-      } else {
+        settingsTab.classList.add("hidden");
+      } else if (tab === "upgrades") {
         sparksTab.classList.add("hidden");
         upgradesTab.classList.remove("hidden");
+        settingsTab.classList.add("hidden");
+      } else {
+        sparksTab.classList.add("hidden");
+        upgradesTab.classList.add("hidden");
+        settingsTab.classList.remove("hidden");
       }
 
       const navButtons = document.querySelectorAll(".nav-btn");
@@ -1141,7 +1388,7 @@
       tick(dt);
       updateUI();
 
-      if (now % 1000 < 50) {
+      if (state.settings.autosave && now % 1000 < 50) {
         saveGame();
       }
 
@@ -1157,12 +1404,15 @@
       state.sparks = 25;
       state.totalSparksThisRun = 0;
       state.upgrades = { sparks: {}, stabilizers: {} };
+      state.settings = { autosave: true, notation: "short" };
     }
 
     setupGeneratorButtons();
     setupUpgradeButtons();
     setupIntroOverlay();
     setupNav();
+    setupSettingsControls();
+    updateSettingsUIFromState();
     updateUI();
     requestAnimationFrame(gameLoop);
   </script>
