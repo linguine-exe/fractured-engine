@@ -835,6 +835,42 @@ function buyGenerator(index, modeOverride) {
   }
 }
 
+function batchCost(index, countToBuy) {
+  const r = effectiveCostGrowth(index);
+  const base = baseCostWithDiscount(index);
+  const current = state.genCounts[index];
+  const a = base * Math.pow(r, current);
+
+  if (countToBuy <= 0) return 0;
+
+  if (r <= 1.0000001) {
+    return a * countToBuy;
+  }
+
+  return a * (Math.pow(r, countToBuy) - 1) / (r - 1);
+}
+
+function getPlannedPurchase(index) {
+  const available = state.sparks;
+  let maxK = maxAffordableForGenerator(index, available);
+
+  if (buyMode === "1") {
+    maxK = Math.min(maxK, 1);
+  } else if (buyMode === "10") {
+    maxK = Math.min(maxK, 10);
+  }
+  // buyMode "max" uses full maxK
+
+  if (maxK <= 0) {
+    return { qty: 0, cost: 0, canAfford: false };
+  }
+
+  const cost = batchCost(index, maxK);
+  const canAfford = state.sparks + 1e-9 >= cost;
+
+  return { qty: maxK, cost, canAfford };
+}
+
 function runAutobuyers() {
   stabUpgrades.forEach(upg => {
     if (!isUpgradePurchased("stabilizers", upg.id)) return;
@@ -859,27 +895,29 @@ function buildGeneratorUI() {
       <div class="gen-header">
         <div class="gen-left">
           <span class="gen-icon">${gen.icon}</span>
-          <span class="gen-name">${gen.name}</span>
+          <div>
+            <div class="gen-name">${gen.name}</div>
+            <div class="gen-meta small">
+              Owned: <span id="genCount_${gen.id}" class="inline-stat">0</span>
+              · Output: <span id="genOutput_${gen.id}" class="inline-stat">0.00</span>/s
+            </div>
+          </div>
         </div>
-        <div class="gen-count">
-          Owned: <span id="genCount_${gen.id}" class="inline-stat">0</span>
-        </div>
-      </div>
-      <div class="gen-body small">
-        Produces <span class="inline-stat">${gen.baseRate.toFixed(2)}</span> Sparks per second each
-        before upgrades.<br>
-        Cost: <span id="genCost_${gen.id}" class="inline-stat">${formatNumber(gen.baseCost)}</span> Sparks
-      </div>
-      <div class="gen-flavor">
-        ${gen.flavor}
       </div>
       <div class="gen-actions">
-        <button id="genBuy_${gen.id}">Construct ${gen.shortLabel}</button>
+        <button id="genBuy_${gen.id}">
+          Construct ${gen.shortLabel}
+          <span id="genBuyInfo_${gen.id}" class="small"></span>
+        </button>
+      </div>
+      <div class="gen-flavor hover-flavor small">
+        ${gen.flavor}
       </div>
     `;
     list.appendChild(row);
   });
 }
+
 
 function buildUpgradesUI() {
   const sparkGrid = document.getElementById("sparkUpgradesGrid");
@@ -1153,17 +1191,35 @@ function updateUI() {
 
   generators.forEach((gen, index) => {
     const countSpan = document.getElementById("genCount_" + gen.id);
-    const costSpan = document.getElementById("genCost_" + gen.id);
+    const outputSpan = document.getElementById("genOutput_" + gen.id);
+    const buyInfoSpan = document.getElementById("genBuyInfo_" + gen.id);
     const button = document.getElementById("genBuy_" + gen.id);
-    if (!countSpan || !costSpan || !button) return;
-
-    const cost = genCost(index);
+    if (!countSpan || !button) return;
+  
+    // Owned
     countSpan.textContent = state.genCounts[index].toString();
-    costSpan.textContent = formatNumber(cost);
-
-    const canAfford = state.sparks >= cost;
-    toggleAffordable(button, canAfford);
+  
+    // Total output per second for this generator type
+    if (outputSpan) {
+      const totalOutput = state.genCounts[index] * genEffectiveRate(index) * state.sparkMultiplier;
+      outputSpan.textContent = formatNumber(totalOutput);
+    }
+  
+    // Batch size and cost based on current buy mode
+    if (buyInfoSpan) {
+      const plan = getPlannedPurchase(index);
+  
+      if (plan.qty > 0) {
+        buyInfoSpan.textContent =
+          " | +" + plan.qty + " (Cost: " + formatNumber(plan.cost) + " Sparks)";
+      } else {
+        buyInfoSpan.textContent = " | Cannot afford";
+      }
+  
+      toggleAffordable(button, plan.canAfford);
+    }
   });
+
 
   const raw = stabilizerRawGain();
   const floored = stabilizerGainFloored();
