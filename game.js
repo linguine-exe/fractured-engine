@@ -1466,6 +1466,16 @@ setupUpgradeButtons();
 setupIntroOverlay();
 setupNav();
 setupSettingsControls();
+
+// NEW: hook up Stabilize Flow button
+const stabilizeBtnEl = document.getElementById("stabilizeBtn");
+if (stabilizeBtnEl) {
+  stabilizeBtnEl.onclick = () => {
+    stabilize();
+    updateUI();
+  };
+}
+
 setupBuyModeButtons();
 updateSettingsUIFromState();
 updateUI();
