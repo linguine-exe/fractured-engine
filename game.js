@@ -704,7 +704,7 @@ function tick(dt) {
 }
 
 function resetSparkLayer() {
-  const baseStarting = 0;
+  const baseStarting = 25;
   let extra = 0;
 
   stabUpgrades.forEach(upg => {
