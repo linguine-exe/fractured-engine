@@ -714,7 +714,7 @@ function resetSparkLayer() {
     }
   });
 
-  state.sparks = baseStarting + extra;
+  state.sparks = 25 + extra;
   state.totalSparksThisRun = 0;
   state.bestSparksThisReset = state.sparks;
   state.genCounts = new Array(generators.length).fill(0);
