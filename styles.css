@@ -225,6 +225,21 @@ button:disabled {
   flex-wrap: wrap;
 }
 
+.gen-meta {
+  margin-top: 2px;
+  opacity: 0.8;
+}
+
+/* Flavor only on hover */
+.hover-flavor {
+  display: none;
+  margin-top: 4px;
+}
+
+.gen-row:hover .hover-flavor {
+  display: block;
+}
+
 /* Intro overlay */
 #introOverlay {
   position: fixed;
